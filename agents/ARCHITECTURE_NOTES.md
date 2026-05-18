@@ -1,6 +1,6 @@
 # ARCHITECTURE_NOTES
 
-Last updated: 2026-03-17
+Last updated: 2026-05-18
 
 ## 1) Purpose of this document
 
@@ -36,3 +36,29 @@ These are future architecture considerations, not current implementation request
 - The current stabilization lane is production hardening and verified risk reduction, not architecture redesign.
 - No immediate runtime blocker requires widening scope now.
 - Recording this note preserves context for future architecture work while keeping current execution disciplined.
+
+## 6) Candidate Public Deployment Topology
+
+Future product deployment can be split by responsibility:
+
+```text
+api.gnncab.com
+  -> DigitalOcean backend
+
+admin.gnncab.com
+  -> Cloudflare Pages/Workers static frontend
+
+www.gnncab.com
+  -> Cloudflare landing page
+
+app.gnncab.com
+  -> mobile deep links / app download page / maybe web fallback
+
+Flutter app
+  -> talks to api.gnncab.com
+  -> uses Firebase FCM/Crashlytics/Analytics
+```
+
+This is a candidate future topology, not a current deploy requirement.
+
+The important boundary is that the backend remains the stateful system core on DigitalOcean, while Cloudflare is used for DNS/CDN/static frontend surfaces and small edge behavior. The mobile app is distributed through mobile app stores; Cloudflare can host app-facing web/deep-link/download pages, not the native app binary itself.

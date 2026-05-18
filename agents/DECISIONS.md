@@ -1,6 +1,6 @@
 # DECISIONS
 
-Last updated: 2026-03-19
+Last updated: 2026-05-18
 
 ## D-001: Preserve the existing backend-first monorepo architecture during stabilization
 
@@ -71,3 +71,25 @@ Last updated: 2026-03-19
 - Revisit when:
   - a different production-safe routing backend is intentionally introduced
   - or routing accuracy/availability semantics are intentionally redesigned
+
+## D-006: Keep backend on DigitalOcean and use Cloudflare for public web surfaces as a candidate topology
+
+- Status: proposed
+- Decision:
+  - Treat DigitalOcean as the preferred home for the stateful backend API, PostgreSQL-adjacent runtime, WebSocket dispatch flow, routing integration, backups, and restore operations.
+  - Treat Cloudflare as the preferred public edge for DNS, CDN, static admin frontend, landing page, app download/deep-link pages, and small edge behavior.
+  - Treat the native mobile app as a Flutter app distributed through mobile app stores, with Firebase services considered for FCM, Crashlytics, and Analytics.
+- Candidate topology:
+  - `api.gnncab.com` -> DigitalOcean backend
+  - `admin.gnncab.com` -> Cloudflare Pages/Workers static frontend
+  - `www.gnncab.com` -> Cloudflare landing page
+  - `app.gnncab.com` -> mobile deep links / app download page / maybe web fallback
+  - Flutter app -> talks to `api.gnncab.com` and uses Firebase FCM/Crashlytics/Analytics
+- Why:
+  - The backend has stateful dispatch, PostgreSQL, WebSocket, routing, backup, and restore concerns that fit the current DigitalOcean deployment path better than an edge-only runtime.
+  - The admin frontend and public web surfaces are static or mostly-static assets that fit Cloudflare well.
+  - The mobile app should be treated as a native app artifact, not as something hosted in a Worker.
+- Revisit when:
+  - production deployment is redesigned around containers or managed services
+  - the backend is intentionally moved away from DigitalOcean
+  - Cloudflare Workers become part of a specific backend edge/proxy design

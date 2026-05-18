@@ -1,6 +1,6 @@
 # NEXT_ACTIONS
 
-Last updated: 2026-03-19
+Last updated: 2026-05-18
 
 ## Verified Complete
 
@@ -72,6 +72,12 @@ Last updated: 2026-03-19
 - [ ] Align `.env.example` and deploy-facing guidance with current runtime truth.
 - [ ] Review and decide the localStorage JWT / XSS posture.
 - [ ] Run and document a backup / restore operational drill.
+- [ ] When deployment planning resumes, evaluate the candidate topology:
+  - `api.gnncab.com` on DigitalOcean backend
+  - `admin.gnncab.com` on Cloudflare Pages/Workers static frontend
+  - `www.gnncab.com` on Cloudflare landing page
+  - `app.gnncab.com` for mobile deep links / app download page / maybe web fallback
+  - Flutter app using `api.gnncab.com` plus Firebase FCM/Crashlytics/Analytics
 
 ## Post-Deploy Runtime Validation
 
