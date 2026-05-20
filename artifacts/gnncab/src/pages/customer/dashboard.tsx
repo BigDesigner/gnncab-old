@@ -84,6 +84,7 @@ export default function CustomerDashboard() {
       lat: dropoffLat,
       lng: dropoffLng,
       title: "Dropoff Location",
+      description: dropoffAddress,
       isDriver: false
     });
   }

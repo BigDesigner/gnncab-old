@@ -4,6 +4,7 @@ import { citiesTable, zonesTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
 import { authenticate, requireRole, type AuthRequest } from "../middlewares/auth.js";
 import { logAudit } from "../lib/audit.js";
+import { getRouteParam } from "../lib/request.js";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -35,18 +36,20 @@ router.post("/", authenticate, requireRole("admin"), async (req: AuthRequest, re
 });
 
 router.get("/:cityId", authenticate, async (req, res) => {
-  const [city] = await db.select().from(citiesTable).where(eq(citiesTable.id, req.params.cityId)).limit(1);
+  const cityId = getRouteParam(req, "cityId");
+  const [city] = await db.select().from(citiesTable).where(eq(citiesTable.id, cityId)).limit(1);
   if (!city) { res.status(404).json({ error: "NotFound", message: "City not found" }); return; }
   res.json(city);
 });
 
 router.put("/:cityId", authenticate, requireRole("admin"), async (req: AuthRequest, res) => {
+  const cityId = getRouteParam(req, "cityId");
   const parsed = citySchema.partial().safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "ValidationError", message: "Invalid input" });
     return;
   }
-  const [city] = await db.update(citiesTable).set({ ...parsed.data, updatedAt: new Date() }).where(eq(citiesTable.id, req.params.cityId)).returning();
+  const [city] = await db.update(citiesTable).set({ ...parsed.data, updatedAt: new Date() }).where(eq(citiesTable.id, cityId)).returning();
   if (!city) { res.status(404).json({ error: "NotFound", message: "City not found" }); return; }
   await logAudit({ entity: "city", entityId: city.id, action: "UPDATE", actorId: req.user?.userId, actorRole: req.user?.role, ipAddress: req.ip });
   res.json(city);
@@ -61,17 +64,19 @@ const zoneSchema = z.object({
 });
 
 router.get("/:cityId/zones", authenticate, async (req, res) => {
-  const zones = await db.select().from(zonesTable).where(eq(zonesTable.cityId, req.params.cityId));
+  const cityId = getRouteParam(req, "cityId");
+  const zones = await db.select().from(zonesTable).where(eq(zonesTable.cityId, cityId));
   res.json(zones);
 });
 
 router.post("/:cityId/zones", authenticate, requireRole("admin"), async (req: AuthRequest, res) => {
+  const cityId = getRouteParam(req, "cityId");
   const parsed = zoneSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "ValidationError", message: "Invalid input", details: parsed.error.flatten() });
     return;
   }
-  const [zone] = await db.insert(zonesTable).values({ ...parsed.data, cityId: req.params.cityId }).returning();
+  const [zone] = await db.insert(zonesTable).values({ ...parsed.data, cityId }).returning();
   await logAudit({ entity: "zone", entityId: zone.id, action: "CREATE", actorId: req.user?.userId, actorRole: req.user?.role, ipAddress: req.ip });
   res.status(201).json(zone);
 });

@@ -220,7 +220,19 @@ Current verified runtime behavior:
 - the default PM2 production mode is a single worker
 - do not switch back to multi-worker cluster mode unless Redis/pubsub is provisioned and configured
 
-### 3j. Configure firewall
+### 3j. Health and readiness endpoints
+
+The API exposes separate liveness, readiness, and compatibility health endpoints:
+
+| Endpoint | Purpose | Expected success condition |
+|---|---|---|
+| `/api/livez` | Process liveness probe | The Node.js process can serve HTTP. |
+| `/api/readyz` | Traffic readiness probe | Database check, WebSocket runtime, and startup cleanup are all healthy. |
+| `/api/healthz` | Backward-compatible health summary | Returns the same readiness checks with `ok`, `degraded`, or `fail` status. |
+
+Use `/api/readyz` for production traffic-readiness checks. Use `/api/livez` only for process-liveness monitoring.
+
+### 3k. Configure firewall
 
 ```bash
 ufw default deny incoming

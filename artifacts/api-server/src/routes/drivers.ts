@@ -5,6 +5,7 @@ import { eq, and, sql } from "drizzle-orm";
 import { authenticate, requireRole, requireDriverSelf, type AuthRequest } from "../middlewares/auth.js";
 import { logAudit } from "../lib/audit.js";
 import { haversine } from "../lib/dispatch.js";
+import { getRouteParam } from "../lib/request.js";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -102,11 +103,12 @@ router.get("/nearby", authenticate, async (req, res) => {
 
 // ─── GET /drivers/:driverId — admin or the driver themselves ──────────────────
 router.get("/:driverId", authenticate, async (req: AuthRequest, res) => {
+  const driverId = getRouteParam(req, "driverId");
   // Drivers can only view their own profile via this route
   if (req.user?.role === "driver") {
     const [self] = await db.select({ id: driverProfilesTable.id })
       .from(driverProfilesTable).where(eq(driverProfilesTable.userId, req.user.userId)).limit(1);
-    if (!self || self.id !== req.params.driverId) {
+    if (!self || self.id !== driverId) {
       res.status(403).json({ error: "Forbidden", message: "You can only view your own driver profile" });
       return;
     }
@@ -128,7 +130,7 @@ router.get("/:driverId", authenticate, async (req: AuthRequest, res) => {
       })
       .from(driverProfilesTable)
       .innerJoin(usersTable, eq(driverProfilesTable.userId, usersTable.id))
-      .where(eq(driverProfilesTable.id, req.params.driverId))
+      .where(eq(driverProfilesTable.id, driverId))
       .limit(1);
     if (!driver) { res.status(404).json({ error: "NotFound", message: "Driver not found" }); return; }
     res.json(driver);
@@ -139,7 +141,7 @@ router.get("/:driverId", authenticate, async (req: AuthRequest, res) => {
     .select({ ...DRIVER_COLUMNS, licenseNumber: driverProfilesTable.licenseNumber })
     .from(driverProfilesTable)
     .innerJoin(usersTable, eq(driverProfilesTable.userId, usersTable.id))
-    .where(eq(driverProfilesTable.id, req.params.driverId))
+    .where(eq(driverProfilesTable.id, driverId))
     .limit(1);
 
   if (!driver) { res.status(404).json({ error: "NotFound", message: "Driver not found" }); return; }
@@ -150,6 +152,7 @@ router.get("/:driverId", authenticate, async (req: AuthRequest, res) => {
 // Drivers can only update their OWN status. Admins can update any driver.
 // Neither can manually set status to BUSY — that is set by the dispatch engine.
 router.put("/:driverId/status", authenticate, requireRole("driver", "admin"), requireDriverSelf, async (req: AuthRequest, res) => {
+  const driverId = getRouteParam(req, "driverId");
   const parsed = z.object({ status: z.enum(["AVAILABLE", "OFFLINE"]) }).safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "ValidationError", message: "status must be AVAILABLE or OFFLINE" });
@@ -160,7 +163,7 @@ router.put("/:driverId/status", authenticate, requireRole("driver", "admin"), re
   if (parsed.data.status === "OFFLINE") {
     const [busy] = await db.select({ id: driverProfilesTable.id })
       .from(driverProfilesTable)
-      .where(and(eq(driverProfilesTable.id, req.params.driverId), eq(driverProfilesTable.status, "BUSY")))
+      .where(and(eq(driverProfilesTable.id, driverId), eq(driverProfilesTable.status, "BUSY")))
       .limit(1);
     if (busy) {
       res.status(409).json({ error: "Conflict", message: "You cannot go offline while you have an active trip assignment" });
@@ -170,7 +173,7 @@ router.put("/:driverId/status", authenticate, requireRole("driver", "admin"), re
 
   const [driver] = await db.update(driverProfilesTable)
     .set({ status: parsed.data.status, updatedAt: new Date(), lastSeen: new Date() })
-    .where(eq(driverProfilesTable.id, req.params.driverId))
+    .where(eq(driverProfilesTable.id, driverId))
     .returning();
 
   if (!driver) { res.status(404).json({ error: "NotFound", message: "Driver not found" }); return; }
@@ -188,7 +191,7 @@ router.put("/:driverId/status", authenticate, requireRole("driver", "admin"), re
   const [full] = await db.select(DRIVER_COLUMNS)
     .from(driverProfilesTable)
     .innerJoin(usersTable, eq(driverProfilesTable.userId, usersTable.id))
-    .where(eq(driverProfilesTable.id, req.params.driverId))
+    .where(eq(driverProfilesTable.id, driverId))
     .limit(1);
 
   res.json(full);
@@ -197,16 +200,18 @@ router.put("/:driverId/status", authenticate, requireRole("driver", "admin"), re
 // ─── GET /drivers/:driverId/zones ─────────────────────────────────────────────
 // Authenticated driver (self) or admin
 router.get("/:driverId/zones", authenticate, requireRole("driver", "admin"), requireDriverSelf, async (req, res) => {
+  const driverId = getRouteParam(req, "driverId");
   const assignments = await db
     .select({ zone: zonesTable })
     .from(driverZoneAssignmentsTable)
     .innerJoin(zonesTable, eq(driverZoneAssignmentsTable.zoneId, zonesTable.id))
-    .where(eq(driverZoneAssignmentsTable.driverId, req.params.driverId));
+    .where(eq(driverZoneAssignmentsTable.driverId, driverId));
   res.json(assignments.map(a => a.zone));
 });
 
 // ─── POST /drivers/:driverId/zones — admin only ───────────────────────────────
 router.post("/:driverId/zones", authenticate, requireRole("admin"), async (req: AuthRequest, res) => {
+  const driverId = getRouteParam(req, "driverId");
   const parsed = z.object({ zoneId: z.string().uuid() }).safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "ValidationError", message: "zoneId (UUID) is required" });
@@ -214,12 +219,12 @@ router.post("/:driverId/zones", authenticate, requireRole("admin"), async (req: 
   }
 
   await db.insert(driverZoneAssignmentsTable)
-    .values({ driverId: req.params.driverId, zoneId: parsed.data.zoneId })
+    .values({ driverId, zoneId: parsed.data.zoneId })
     .onConflictDoNothing();
 
   await logAudit({
     entity:    "driver",
-    entityId:  req.params.driverId,
+    entityId:  driverId,
     action:    "ZONE_ASSIGNED",
     actorId:   req.user?.userId,
     actorRole: req.user?.role,
@@ -231,19 +236,21 @@ router.post("/:driverId/zones", authenticate, requireRole("admin"), async (req: 
 
 // ─── DELETE /drivers/:driverId/zones/:zoneId — admin only ────────────────────
 router.delete("/:driverId/zones/:zoneId", authenticate, requireRole("admin"), async (req: AuthRequest, res) => {
+  const driverId = getRouteParam(req, "driverId");
+  const zoneId = getRouteParam(req, "zoneId");
   await db.delete(driverZoneAssignmentsTable)
     .where(and(
-      eq(driverZoneAssignmentsTable.driverId, req.params.driverId),
-      eq(driverZoneAssignmentsTable.zoneId, req.params.zoneId)
+      eq(driverZoneAssignmentsTable.driverId, driverId),
+      eq(driverZoneAssignmentsTable.zoneId, zoneId)
     ));
 
   await logAudit({
     entity:    "driver",
-    entityId:  req.params.driverId,
+    entityId:  driverId,
     action:    "ZONE_UNASSIGNED",
     actorId:   req.user?.userId,
     actorRole: req.user?.role,
-    metadata:  { zoneId: req.params.zoneId },
+    metadata:  { zoneId },
     ipAddress: req.ip,
   });
   res.json({ success: true, message: "Zone unassigned from driver" });

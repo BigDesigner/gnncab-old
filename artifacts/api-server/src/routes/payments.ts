@@ -4,6 +4,7 @@ import { paymentsTable, tripsTable } from "@workspace/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { authenticate, requireRole, type AuthRequest } from "../middlewares/auth.js";
 import { logAudit, AuditAction } from "../lib/audit.js";
+import { getRouteParam } from "../lib/request.js";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -39,8 +40,9 @@ router.get("/", authenticate, requireRole("admin"), async (req: AuthRequest, res
 
 // ─── GET /payments/:paymentId — admin or trip owner ───────────────────────────
 router.get("/:paymentId", authenticate, async (req: AuthRequest, res) => {
+  const paymentId = getRouteParam(req, "paymentId");
   const [payment] = await db.select().from(paymentsTable)
-    .where(eq(paymentsTable.id, req.params.paymentId)).limit(1);
+    .where(eq(paymentsTable.id, paymentId)).limit(1);
   if (!payment) {
     res.status(404).json({ error: "NotFound", message: "Payment not found" });
     return;
@@ -61,6 +63,7 @@ router.get("/:paymentId", authenticate, async (req: AuthRequest, res) => {
 
 // ─── POST /payments/:paymentId/refund — admin only ───────────────────────────
 router.post("/:paymentId/refund", authenticate, requireRole("admin"), async (req: AuthRequest, res) => {
+  const paymentId = getRouteParam(req, "paymentId");
   const schema = z.object({ reason: z.string().min(1).max(500) });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) {
@@ -69,7 +72,7 @@ router.post("/:paymentId/refund", authenticate, requireRole("admin"), async (req
   }
 
   const [payment] = await db.select().from(paymentsTable)
-    .where(eq(paymentsTable.id, req.params.paymentId)).limit(1);
+    .where(eq(paymentsTable.id, paymentId)).limit(1);
   if (!payment) {
     res.status(404).json({ error: "NotFound", message: "Payment not found" });
     return;
@@ -81,7 +84,7 @@ router.post("/:paymentId/refund", authenticate, requireRole("admin"), async (req
 
   const [updated] = await db.update(paymentsTable)
     .set({ status: "REFUNDED", updatedAt: new Date() })
-    .where(eq(paymentsTable.id, req.params.paymentId))
+    .where(eq(paymentsTable.id, paymentId))
     .returning();
 
   await logAudit({

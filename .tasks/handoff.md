@@ -9,7 +9,7 @@
 | Last commit at start | `32338a7` |
 | Worktree at start | Clean |
 | Current phase | Phase 1 stabilization and production runtime hardening |
-| Immediate next task | Deepen health/readiness beyond the current shallow health endpoint |
+| Immediate next task | Re-check `.env.example` and deploy-facing guidance against current runtime truth |
 
 ## What Changed In This Memory Restructure
 
@@ -23,14 +23,15 @@
 
 ## Known Failures And Risks
 
-- Backend typecheck has known failures, including driver status/domain mismatch and route param typing issues.
-- Frontend/admin typecheck has known map/query/marker typing failures.
-- Health/readiness depth remains the immediate backend follow-up.
+- Full workspace typecheck currently passes.
+- Health/readiness depth is implemented with separate liveness and readiness endpoints.
+- Backend route param typing, driver status enum, and admin audit action typing were repaired.
+- Frontend/admin map marker and query option typing were repaired.
 - Flutter app is planned but not yet present in the repository.
 
 ## Next Recommended Action
 
-Start with backend health/readiness depth, then move into backend typecheck/domain fixes.
+Re-check `.env.example` and deploy-facing guidance against current runtime truth, then continue production-readiness review.
 
 ## Files Touched
 

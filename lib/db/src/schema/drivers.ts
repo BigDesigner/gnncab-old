@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 import { usersTable } from "./users";
 import { citiesTable } from "./cities";
 
-export const driverStatusEnum = pgEnum("driver_status", ["AVAILABLE", "BUSY", "OFFLINE"]);
+export const driverStatusEnum = pgEnum("driver_status", ["AVAILABLE", "RESERVED", "BUSY", "OFFLINE"]);
 
 export const driverProfilesTable = pgTable("driver_profiles", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),

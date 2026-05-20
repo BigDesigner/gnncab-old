@@ -4,6 +4,7 @@ import { tripsTable, driverProfilesTable, customerProfilesTable, usersTable, cit
 import { eq, and, sql, ilike, or, desc } from "drizzle-orm";
 import { authenticate, requireRole, type AuthRequest } from "../middlewares/auth.js";
 import { logAudit, AuditAction } from "../lib/audit.js";
+import { getRouteParam } from "../lib/request.js";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -72,6 +73,7 @@ router.get("/users", authenticate, requireRole("admin"), async (req: AuthRequest
 
 // ─── GET /admin/users/:userId ─────────────────────────────────────────────────
 router.get("/users/:userId", authenticate, requireRole("admin"), async (_req, res) => {
+  const userId = getRouteParam(_req, "userId");
   const [user] = await db.select({
     id:        usersTable.id,
     email:     usersTable.email,
@@ -82,7 +84,7 @@ router.get("/users/:userId", authenticate, requireRole("admin"), async (_req, re
     isActive:  usersTable.isActive,
     createdAt: usersTable.createdAt,
     updatedAt: usersTable.updatedAt,
-  }).from(usersTable).where(eq(usersTable.id, _req.params.userId)).limit(1);
+  }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
 
   if (!user) { res.status(404).json({ error: "NotFound", message: "User not found" }); return; }
   res.json(user);
@@ -90,6 +92,7 @@ router.get("/users/:userId", authenticate, requireRole("admin"), async (_req, re
 
 // ─── PUT /admin/users/:userId ─────────────────────────────────────────────────
 router.put("/users/:userId", authenticate, requireRole("admin"), async (req: AuthRequest, res) => {
+  const userId = getRouteParam(req, "userId");
   const schema = z.object({
     firstName: z.string().min(1).max(100).optional(),
     lastName:  z.string().min(1).max(100).optional(),
@@ -104,19 +107,19 @@ router.put("/users/:userId", authenticate, requireRole("admin"), async (req: Aut
   }
 
   // Prevent admin from deactivating themselves
-  if (parsed.data.isActive === false && req.params.userId === req.user?.userId) {
+  if (parsed.data.isActive === false && userId === req.user?.userId) {
     res.status(400).json({ error: "BadRequest", message: "You cannot deactivate your own account" });
     return;
   }
 
   // Get current state to detect isActive changes
   const [before] = await db.select({ isActive: usersTable.isActive, role: usersTable.role })
-    .from(usersTable).where(eq(usersTable.id, req.params.userId)).limit(1);
+    .from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (!before) { res.status(404).json({ error: "NotFound", message: "User not found" }); return; }
 
   const [user] = await db.update(usersTable)
     .set({ ...parsed.data, updatedAt: new Date() })
-    .where(eq(usersTable.id, req.params.userId))
+    .where(eq(usersTable.id, userId))
     .returning({
       id:        usersTable.id,
       email:     usersTable.email,
@@ -132,7 +135,7 @@ router.put("/users/:userId", authenticate, requireRole("admin"), async (req: Aut
   if (!user) { res.status(404).json({ error: "NotFound", message: "User not found" }); return; }
 
   // Emit specific action for activation/deactivation changes (HIGH severity)
-  let action = AuditAction.ADMIN_USER_UPDATED;
+  let action: string = AuditAction.ADMIN_USER_UPDATED;
   let severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" = "MEDIUM";
 
   if (parsed.data.isActive === false && before.isActive === true) {

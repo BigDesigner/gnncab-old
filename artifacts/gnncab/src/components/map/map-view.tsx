@@ -21,6 +21,8 @@ const customDriverIcon = new L.Icon({
   className: "hue-rotate-180" // Quick CSS hack to make marker amber colored
 });
 
+const defaultMarkerIcon = new L.Icon.Default();
+
 interface MapViewProps {
   center: [number, number];
   zoom?: number;
@@ -63,7 +65,7 @@ export function MapView({ center, zoom = 13, markers = [], className, onMapClick
           <Marker 
             key={marker.id} 
             position={[marker.lat, marker.lng]}
-            icon={marker.isDriver ? customDriverIcon : L.Icon.Default}
+            icon={marker.isDriver ? customDriverIcon : defaultMarkerIcon}
           >
             {(marker.title || marker.description) && (
               <Popup>

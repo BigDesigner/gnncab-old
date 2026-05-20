@@ -117,7 +117,7 @@ export default function DriverDashboard() {
           <MapView 
             center={[profile?.currentLat || 40.7128, profile?.currentLng || -74.0060]} 
             zoom={14}
-            markers={profile?.currentLat ? [{
+            markers={profile?.currentLat != null && profile.currentLng != null ? [{
               id: 'me',
               lat: profile.currentLat,
               lng: profile.currentLng,

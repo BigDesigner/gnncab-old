@@ -13,6 +13,7 @@ import { authenticate, requireRole, type AuthRequest } from "../middlewares/auth
 import { logAudit, AuditAction, type AuditSeverity } from "../lib/audit.js";
 import { dispatchTrip, estimateRoute, tryRedispatch } from "../lib/dispatch.js";
 import { broadcastTripUpdate } from "../lib/websocket.js";
+import { getRouteParam } from "../lib/request.js";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -175,7 +176,8 @@ router.post("/", authenticate, requireRole("customer"), async (req: AuthRequest,
 
 // ─── GET /trips/:tripId ────────────────────────────────────────────────────────
 router.get("/:tripId", authenticate, async (req: AuthRequest, res) => {
-  const [trip] = await db.select().from(tripsTable).where(eq(tripsTable.id, req.params.tripId)).limit(1);
+  const tripId = getRouteParam(req, "tripId");
+  const [trip] = await db.select().from(tripsTable).where(eq(tripsTable.id, tripId)).limit(1);
   if (!trip) { res.status(404).json({ error: "NotFound", message: "Trip not found" }); return; }
 
   // Ownership check
@@ -240,6 +242,7 @@ router.get("/:tripId", authenticate, async (req: AuthRequest, res) => {
 
 // ─── PUT /trips/:tripId/status ─────────────────────────────────────────────────
 router.put("/:tripId/status", authenticate, async (req: AuthRequest, res) => {
+  const tripId = getRouteParam(req, "tripId");
   const schema = z.object({
     status:   z.enum([
       "DRIVER_ACCEPTED", "DRIVER_REJECTED",
@@ -255,7 +258,7 @@ router.put("/:tripId/status", authenticate, async (req: AuthRequest, res) => {
     return;
   }
 
-  const [trip] = await db.select().from(tripsTable).where(eq(tripsTable.id, req.params.tripId)).limit(1);
+  const [trip] = await db.select().from(tripsTable).where(eq(tripsTable.id, tripId)).limit(1);
   if (!trip) { res.status(404).json({ error: "NotFound", message: "Trip not found" }); return; }
 
   // Only driver who is assigned to this trip (or admin) can change driver-side statuses
@@ -305,7 +308,7 @@ router.put("/:tripId/status", authenticate, async (req: AuthRequest, res) => {
         .where(eq(driverProfilesTable.id, trip.driverId));
     }
     // Update trip first, then attempt re-dispatch
-    const [updated] = await db.update(tripsTable).set(updates as any).where(eq(tripsTable.id, req.params.tripId)).returning();
+    const [updated] = await db.update(tripsTable).set(updates as any).where(eq(tripsTable.id, tripId)).returning();
     await db.insert(tripEventsTable).values({
       tripId: trip.id, status: parsed.data.status,
       actorId: req.user?.userId, actorRole: req.user?.role,
@@ -319,7 +322,7 @@ router.put("/:tripId/status", authenticate, async (req: AuthRequest, res) => {
     return;
   }
 
-  const [updated] = await db.update(tripsTable).set(updates as any).where(eq(tripsTable.id, req.params.tripId)).returning();
+  const [updated] = await db.update(tripsTable).set(updates as any).where(eq(tripsTable.id, tripId)).returning();
 
   await db.insert(tripEventsTable).values({
     tripId:    trip.id,
@@ -348,8 +351,9 @@ router.put("/:tripId/status", authenticate, async (req: AuthRequest, res) => {
 
 // ─── GET /trips/:tripId/events ─────────────────────────────────────────────────
 router.get("/:tripId/events", authenticate, async (req: AuthRequest, res) => {
+  const tripId = getRouteParam(req, "tripId");
   const [trip] = await db.select({ id: tripsTable.id, customerId: tripsTable.customerId, driverId: tripsTable.driverId })
-    .from(tripsTable).where(eq(tripsTable.id, req.params.tripId)).limit(1);
+    .from(tripsTable).where(eq(tripsTable.id, tripId)).limit(1);
   if (!trip) { res.status(404).json({ error: "NotFound", message: "Trip not found" }); return; }
 
   // Same ownership rules as GET /:tripId
@@ -367,13 +371,14 @@ router.get("/:tripId/events", authenticate, async (req: AuthRequest, res) => {
   }
 
   const events = await db.select().from(tripEventsTable)
-    .where(eq(tripEventsTable.tripId, req.params.tripId))
+    .where(eq(tripEventsTable.tripId, tripId))
     .orderBy(tripEventsTable.createdAt);
   res.json(events);
 });
 
 // ─── POST /trips/:tripId/cancel ────────────────────────────────────────────────
 router.post("/:tripId/cancel", authenticate, async (req: AuthRequest, res) => {
+  const tripId = getRouteParam(req, "tripId");
   const parsed = z.object({
     reason: z.string().min(1).max(500),
   }).safeParse(req.body);
@@ -383,7 +388,7 @@ router.post("/:tripId/cancel", authenticate, async (req: AuthRequest, res) => {
     return;
   }
 
-  const [trip] = await db.select().from(tripsTable).where(eq(tripsTable.id, req.params.tripId)).limit(1);
+  const [trip] = await db.select().from(tripsTable).where(eq(tripsTable.id, tripId)).limit(1);
   if (!trip) { res.status(404).json({ error: "NotFound", message: "Trip not found" }); return; }
 
   // Ownership check
@@ -417,7 +422,7 @@ router.post("/:tripId/cancel", authenticate, async (req: AuthRequest, res) => {
   const now = new Date();
   const [updated] = await db.update(tripsTable)
     .set({ status: "TRIP_CANCELLED", cancellationReason: parsed.data.reason, updatedAt: now })
-    .where(eq(tripsTable.id, req.params.tripId))
+    .where(eq(tripsTable.id, tripId))
     .returning();
 
   // Free up the driver if one was assigned

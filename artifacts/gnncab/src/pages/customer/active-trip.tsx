@@ -1,5 +1,5 @@
 import React from "react";
-import { useGetTrip, useCancelTrip } from "@workspace/api-client-react";
+import { getGetTripQueryKey, useGetTrip, useCancelTrip } from "@workspace/api-client-react";
 import { useRoute } from "wouter";
 import { Card, CardContent, Button, Badge } from "@/components/ui";
 import { MapView } from "@/components/map/map-view";
@@ -11,7 +11,7 @@ export default function ActiveTrip() {
   const tripId = params?.id || "";
   
   // Use React Query with polling to get live updates until we hook up full WS updates to query cache
-  const { data: trip } = useGetTrip(tripId, { query: { refetchInterval: 5000 } });
+  const { data: trip } = useGetTrip(tripId, { query: { queryKey: getGetTripQueryKey(tripId), refetchInterval: 5000 } });
   const cancelMutation = useCancelTrip();
 
   if (!trip) return <div className="p-8 text-center animate-pulse">Loading trip details...</div>;
@@ -102,7 +102,7 @@ export default function ActiveTrip() {
           markers={[
             { id: "pickup", lat: trip.pickupLat, lng: trip.pickupLng, title: "Pickup" },
             { id: "dropoff", lat: trip.dropoffLat, lng: trip.dropoffLng, title: "Dropoff" },
-            ...(trip.driver?.currentLat ? [{
+            ...(trip.driver?.currentLat != null && trip.driver.currentLng != null ? [{
               id: "driver", 
               lat: trip.driver.currentLat, 
               lng: trip.driver.currentLng, 

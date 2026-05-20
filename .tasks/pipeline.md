@@ -12,9 +12,9 @@
 
 ## Immediate Next Actions
 
-1. Deepen backend health/readiness beyond the current shallow health endpoint.
-2. Fix backend typecheck issues in narrow domain-safe slices.
-3. Fix admin/frontend typecheck issues after backend domain contract is clarified.
+1. Deepen backend health/readiness beyond the current shallow health endpoint. Completed: `/api/livez` and `/api/readyz` were added alongside the existing `/api/healthz` summary.
+2. Fix backend typecheck issues in narrow domain-safe slices. Completed: backend typecheck now passes.
+3. Fix admin/frontend typecheck issues after backend domain contract is clarified. Completed: full workspace typecheck now passes.
 4. Re-check `.env.example` and deploy-facing guidance against current runtime truth.
 
 ## High-Risk Follow-Up
@@ -38,7 +38,8 @@
 
 | Command | Purpose | Status |
 |---|---|---|
-| `corepack pnpm run typecheck` | Workspace typecheck | Known failing, tracked in bugs. |
+| `corepack pnpm run typecheck` | Workspace typecheck | Passed on 2026-05-20. |
+| `corepack pnpm --filter @workspace/api-server run typecheck` | Backend typecheck | Passed on 2026-05-20. |
 | Backend targeted typecheck | Validate backend fixes | Run after backend changes. |
 | Frontend targeted typecheck | Validate admin/frontend fixes | Run after frontend changes. |
 | Deploy shell checks | Validate deployment script edits | Run after deploy changes. |
