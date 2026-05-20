@@ -14,7 +14,7 @@ const WSContext = createContext<WSContextType>({
 
 export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
-  const { token } = useAuth();
+  const { user } = useAuth();
   const ws = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -22,7 +22,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const THROTTLE_MS = 5000; // 5 seconds throttle for location updates
 
   const connect = useCallback(() => {
-    if (!token || (ws.current && ws.current.readyState !== WebSocket.CLOSED)) return;
+    if (!user || (ws.current && ws.current.readyState !== WebSocket.CLOSED)) return;
 
     // Clear any existing reconnect timer
     if (reconnectTimerRef.current) {
@@ -33,9 +33,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const url = `${protocol}//${window.location.host}/ws`;
 
-    // Keep a stable app protocol first; carry JWT in a secondary protocol value
-    // instead of URL query params to reduce token leakage via logs/history.
-    ws.current = new WebSocket(url, ["gnncab.v1", `auth.${token}`]);
+    ws.current = new WebSocket(url, ["gnncab.v1"]);
     
     ws.current.onopen = () => {
       setIsConnected(true);
@@ -47,7 +45,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
       setIsConnected(false);
       ws.current = null;
       // Attempt reconnect after 3s to gracefully recover
-      if (token) {
+      if (user) {
         reconnectTimerRef.current = setTimeout(() => {
           connect();
         }, 3000);
@@ -81,7 +79,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         console.error("Failed to parse WS message", e);
       }
     };
-  }, [token, queryClient]);
+  }, [user, queryClient]);
 
   useEffect(() => {
     connect();

@@ -12,7 +12,7 @@
 | RISK-002 | WebSocket query-token fallback | Verified | Open | Temporary no-`Origin` fallback remains for compatibility. | Keep telemetry review before final retirement. |
 | RISK-003 | Payment/location/realtime safety | Inferred | Open | GNNcab is a ride-hailing platform with passenger, driver, payment, and location flows. | Treat authorization, audit, and privacy boundaries as release blockers when touched. |
 | RISK-004 | Env/runtime drift | Verified | Closed | `.env.example` included unsupported dispatch tuning variables and API env loading depended on module import order. | Closed by removing unsupported env examples and loading `.env` before runtime module imports. |
-| RISK-005 | Browser JWT storage | Verified | Open | Admin/frontend stores JWT in `localStorage` and reads it for HTTP and WebSocket auth. | Review `.memory-bank/audits/local-storage-jwt-xss-posture.md` and decide cookie/session migration path. |
+| RISK-005 | Browser JWT storage | Verified | Mitigated | Admin/frontend previously stored JWT in `localStorage`; browser auth now uses HttpOnly cookie session with CSRF protection for cookie-authenticated unsafe requests. | Decide remaining token lifetime and native/mobile auth policy before production launch. |
 | RISK-006 | US distance unit mismatch | Verified | Closed | The product targets the United States but API/UI/DB used kilometer naming and calculations. | Closed by switching canonical distance fields and calculations to miles. |
 
 ## Validation Notes
@@ -23,3 +23,4 @@
 | 2026-05-20 | `corepack pnpm --filter @workspace/api-server run typecheck` | Passed | Backend typecheck passed after driver enum, route parameter, and audit action typing fixes. |
 | 2026-05-20 | `corepack pnpm run typecheck` | Passed | Full workspace typecheck passed for libs, backend, admin/frontend, mockup sandbox, and scripts. |
 | 2026-05-20 | `corepack pnpm run typecheck` | Passed | Full workspace typecheck passed after env/deploy alignment. |
+| 2026-05-20 | `corepack pnpm run typecheck` | Passed | Full workspace typecheck passed after browser cookie auth and CSRF changes. |

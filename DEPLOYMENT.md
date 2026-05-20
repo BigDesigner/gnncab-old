@@ -132,6 +132,7 @@ Key values to set:
 |---|---|
 | `DATABASE_URL` | `postgresql://gnncab:YOUR_DB_PASS@localhost:5432/gnncab` |
 | `JWT_SECRET` | `openssl rand -base64 64` |
+| `AUTH_COOKIE_DOMAIN` | optional; leave unset for host-only cookies, or use `.gnncab.com` if browser clients must share auth across subdomains |
 | `ALLOWED_ORIGINS` | Exact browser origin(s) only, such as `https://yourdomain.com` or `http://localhost:5173` for local testing; wildcard `*` is not allowed |
 | `NODE_ENV` | `production` |
 | `PORT` | `3000` |
@@ -147,6 +148,9 @@ Current verified runtime expectations:
 - `OSRM_BASE_URL` is required whenever `ROUTING_PROVIDER=osrm`.
 - Treat `mock` routing as local/dev-only, not a production fallback.
 - Dispatch tuning values are currently code constants, not environment variables. Do not add `MAX_DISPATCH_*` environment values unless the backend is changed to read and validate them.
+- Browser clients authenticate with an HttpOnly `gnncab_session` cookie. Bearer tokens remain accepted for compatibility with native/mobile or operational clients.
+- Cookie-authenticated unsafe HTTP requests must include the `X-CSRF-Token` header matching the readable `gnncab_csrf` cookie.
+- If `admin.gnncab.com` calls `api.gnncab.com` directly instead of through a same-origin proxy, set `AUTH_COOKIE_DOMAIN=.gnncab.com` so the admin frontend can read the CSRF cookie and send the matching header.
 
 ### 3d. Apply checked-in migrations
 

@@ -13,6 +13,7 @@ import {
   type TripUpdatePayload,
   type DriverLocationPayload,
 } from "./pubsub.js";
+import { AUTH_COOKIE_NAME, parseCookieHeader } from "./auth-cookie.js";
 
 interface AuthenticatedClient {
   ws: WebSocket;
@@ -96,6 +97,10 @@ function getTokenFromSubprotocolHeader(header: string | string[] | undefined): s
   return null;
 }
 
+function getTokenFromCookieHeader(header: string | undefined): string | null {
+  return parseCookieHeader(header)[AUTH_COOKIE_NAME] ?? null;
+}
+
 export function isWebSocketReady(): boolean {
   return websocketRuntimeState.initialized && websocketRuntimeState.listening;
 }
@@ -133,16 +138,22 @@ export function setupWebSocket(server: Server) {
       return;
     }
 
-    // Prefer JWT from WebSocket subprotocol to avoid URL-query token leakage.
-    // Keep query-string fallback for compatibility with non-browser/native clients.
+    // Browser clients should authenticate with the HttpOnly session cookie.
+    // Subprotocol remains available for native/mobile compatibility.
+    // Query-string fallback is restricted to no-Origin compatibility clients.
+    const tokenFromCookie = getTokenFromCookieHeader(req.headers.cookie);
     const tokenFromSubprotocol = getTokenFromSubprotocolHeader(req.headers["sec-websocket-protocol"]);
     const url = new URL(req.url ?? "", "http://localhost");
     const tokenFromQuery = url.searchParams.get("token");
-    const token = tokenFromSubprotocol ?? tokenFromQuery;
+    const token = tokenFromCookie ?? tokenFromSubprotocol ?? (requestOrigin ? null : tokenFromQuery);
 
     if (!token) {
       ws.close(4001, "Unauthorized: missing token");
       return;
+    }
+
+    if (!requestOrigin && tokenFromQuery && token === tokenFromQuery) {
+      console.warn("[WS] Query-token fallback authenticated for no-Origin request");
     }
 
     let payload: { userId: string; role: string; email: string };

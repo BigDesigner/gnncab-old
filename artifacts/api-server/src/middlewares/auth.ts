@@ -3,6 +3,7 @@ import { verifyToken, JwtPayload } from "../lib/jwt.js";
 import { db } from "@workspace/db";
 import { driverProfilesTable } from "@workspace/db/schema";
 import { eq } from "drizzle-orm";
+import { AUTH_COOKIE_NAME } from "../lib/auth-cookie.js";
 
 export interface AuthRequest extends Request {
   user?: JwtPayload;
@@ -14,11 +15,15 @@ export interface AuthRequest extends Request {
  */
 export function authenticate(req: AuthRequest, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Unauthorized", message: "Missing or invalid Authorization header" });
+  const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  const cookieToken = typeof req.cookies?.[AUTH_COOKIE_NAME] === "string" ? req.cookies[AUTH_COOKIE_NAME] : null;
+  const token = bearerToken ?? cookieToken;
+
+  if (!token) {
+    res.status(401).json({ error: "Unauthorized", message: "Missing or invalid authentication token" });
     return;
   }
-  const token = authHeader.slice(7);
+
   try {
     req.user = verifyToken(token);
     next();

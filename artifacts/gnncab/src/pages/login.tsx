@@ -16,7 +16,7 @@ export default function Login() {
   const loginMutation = useLogin({
     mutation: {
       onSuccess: (data) => {
-        login(data.user, data.token);
+        login(data.user);
         if (data.user.role === "admin") setLocation("/admin");
         else if (data.user.role === "driver") setLocation("/driver");
         else setLocation("/customer");

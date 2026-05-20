@@ -4,8 +4,8 @@
 
 | Area | Status | Confidence | Evidence |
 |---|---|---|---|
-| Branch | `master`, ahead of `origin/master` by 2 commits | Verified | `git status --short --branch` |
-| Worktree at start | Clean | Verified | `git status --short --branch` |
+| Branch | `master`, ahead of `origin/master` by 5 commits | Verified | `git status --short --branch` |
+| Worktree at current slice | Dirty with auth hardening changes pending commit | Verified | `git status --short --branch` |
 | Production blockers | Closed at patch/content level | Verified | `agents/SESSION_SNAPSHOT.md` |
 | Current phase | Phase 1 stabilization and production runtime hardening | Verified | `agents/SESSION_STATE.md` |
 | Mobile app | Planned as Flutter, not yet implemented in repo | Verified / Inferred | No `pubspec.yaml`; candidate topology docs |
@@ -21,7 +21,7 @@
 
 | Item | Status | Notes |
 |---|---|---|
-| LocalStorage JWT / XSS posture | Open | Review before production launch. |
+| LocalStorage JWT / XSS posture | Mitigated | Browser auth now uses HttpOnly cookie session with CSRF protection for cookie-authenticated unsafe requests; remaining work is token lifetime and native/mobile auth policy. |
 | Backup/restore operational drill | Open | Scripts are hardened, but drill is still needed. |
 | WebSocket fallback telemetry review | Open | Required before final query-token fallback retirement. |
 | Long-term realtime scaling direction | Open | Single-worker vs Redis-backed cluster mode. |
@@ -34,7 +34,7 @@
 - Add app-facing deep link/download page strategy for `app.gnncab.com`.
 - Decide Cloudflare Pages/Workers split for admin/public web surfaces.
 - Define release-readiness checklist for first production deployment.
-- Decide browser auth storage direction: keep short-lived bearer token temporarily or migrate admin/frontend to HttpOnly cookie session.
+- Decide remaining auth policy: token lifetime and native/mobile bearer/refresh-token strategy.
 
 ## Suggested Validation Plan
 
@@ -46,3 +46,4 @@
 | Frontend targeted typecheck | Validate admin/frontend fixes | Run after frontend changes. |
 | Deploy shell checks | Validate deployment script edits | Run after deploy changes. |
 | `corepack pnpm run typecheck` | Workspace typecheck after env/deploy alignment | Passed on 2026-05-20. |
+| `corepack pnpm run typecheck` | Workspace typecheck after browser cookie auth and CSRF changes | Passed on 2026-05-20. |

@@ -6,6 +6,7 @@ import { hashPassword, comparePassword } from "../lib/password.js";
 import { signToken } from "../lib/jwt.js";
 import { authenticate, type AuthRequest } from "../middlewares/auth.js";
 import { logAudit, AuditAction } from "../lib/audit.js";
+import { clearAuthCookie, setAuthCookie } from "../lib/auth-cookie.js";
 import { z } from "zod";
 
 const router: IRouter = Router();
@@ -68,6 +69,7 @@ router.post("/register", async (req, res) => {
   }
 
   const token = signToken({ userId: user.id, email: user.email, role: user.role });
+  setAuthCookie(res, token);
 
   await logAudit({
     entity:    "auth",
@@ -156,6 +158,7 @@ router.post("/login", async (req, res) => {
   }
 
   const token = signToken({ userId: user.id, email: user.email, role: user.role });
+  setAuthCookie(res, token);
 
   await logAudit({
     entity:    "auth",
@@ -197,6 +200,7 @@ router.post("/logout", authenticate, async (req: AuthRequest, res) => {
     userAgent: req.headers["user-agent"],
     severity:  "LOW",
   });
+  clearAuthCookie(res);
   res.json({ success: true, message: "Logged out successfully" });
 });
 
