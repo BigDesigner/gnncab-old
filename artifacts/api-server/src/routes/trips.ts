@@ -129,7 +129,7 @@ router.post("/", authenticate, requireRole("customer"), async (req: AuthRequest,
     return;
   }
 
-  const { distanceKm, estimatedFare, currency } = estimateRoute(
+  const { distanceMiles, estimatedFare, currency } = estimateRoute(
     parsed.data.pickupLat, parsed.data.pickupLng,
     parsed.data.dropoffLat, parsed.data.dropoffLng
   );
@@ -145,7 +145,7 @@ router.post("/", authenticate, requireRole("customer"), async (req: AuthRequest,
     paymentMethod:  parsed.data.paymentMethod,
     notes:          parsed.data.notes,
     cityId:         parsed.data.cityId,
-    distanceKm,
+    distanceMiles,
     estimatedFare:  estimatedFare.toString(),
     currency,
     status:         "REQUESTED",

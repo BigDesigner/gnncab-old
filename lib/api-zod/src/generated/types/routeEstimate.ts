@@ -7,7 +7,7 @@
  */
 
 export interface RouteEstimate {
-  distanceKm: number;
+  distanceMiles: number;
   durationMinutes: number;
   estimatedFare: number;
   currency: string;

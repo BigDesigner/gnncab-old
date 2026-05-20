@@ -33,7 +33,7 @@ export const tripsTable = pgTable("trips", {
   dropoffLng: doublePrecision("dropoff_lng").notNull(),
   dropoffAddress: text("dropoff_address").notNull(),
   status: tripStatusEnum("status").notNull().default("REQUESTED"),
-  distanceKm: doublePrecision("distance_km"),
+  distanceMiles: doublePrecision("distance_miles"),
   estimatedFare: numeric("estimated_fare", { precision: 10, scale: 2 }),
   finalFare: numeric("final_fare", { precision: 10, scale: 2 }),
   currency: text("currency").notNull().default("USD"),

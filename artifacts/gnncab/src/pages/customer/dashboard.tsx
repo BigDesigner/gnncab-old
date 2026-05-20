@@ -73,7 +73,7 @@ export default function CustomerDashboard() {
     id: d.id,
     lat: d.currentLat,
     lng: d.currentLng,
-    title: `${d.firstName} (${d.distanceKm.toFixed(1)} km)`,
+    title: `${d.firstName} (${d.distanceMiles.toFixed(1)} mi)`,
     description: `${d.vehicleMake} ${d.vehicleModel}`,
     isDriver: true
   })) || [];
@@ -141,7 +141,7 @@ export default function CustomerDashboard() {
                   <Navigation className="h-5 w-5 mr-2 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Distance</p>
-                    <p className="font-medium">{getEstimateMutation.data.distanceKm.toFixed(1)} km</p>
+                    <p className="font-medium">{getEstimateMutation.data.distanceMiles.toFixed(1)} mi</p>
                   </div>
                 </div>
               </div>

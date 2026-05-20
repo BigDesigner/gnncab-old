@@ -24,7 +24,7 @@ export interface TripDetails {
   dropoffLng: number;
   dropoffAddress: string;
   status: TripDetailsStatus;
-  distanceKm?: number | null;
+  distanceMiles?: number | null;
   estimatedFare?: number | null;
   finalFare?: number | null;
   currency: string;

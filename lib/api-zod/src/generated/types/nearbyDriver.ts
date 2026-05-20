@@ -16,6 +16,6 @@ export interface NearbyDriver {
   vehiclePlate?: string | null;
   currentLat: number;
   currentLng: number;
-  distanceKm: number;
+  distanceMiles: number;
   rating?: number | null;
 }

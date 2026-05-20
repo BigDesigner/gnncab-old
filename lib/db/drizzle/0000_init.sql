@@ -115,7 +115,7 @@ CREATE TABLE "trips" (
 	"dropoff_lng" double precision NOT NULL,
 	"dropoff_address" text NOT NULL,
 	"status" "trip_status" DEFAULT 'REQUESTED' NOT NULL,
-	"distance_km" double precision,
+	"distance_miles" double precision,
 	"estimated_fare" numeric(10, 2),
 	"final_fare" numeric(10, 2),
 	"currency" text DEFAULT 'USD' NOT NULL,

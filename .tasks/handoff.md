@@ -9,7 +9,7 @@
 | Last commit at start | `32338a7` |
 | Worktree at start | Clean |
 | Current phase | Phase 1 stabilization and production runtime hardening |
-| Immediate next task | Re-check `.env.example` and deploy-facing guidance against current runtime truth |
+| Immediate next task | Decide browser auth storage direction after localStorage JWT / XSS audit |
 
 ## What Changed In This Memory Restructure
 
@@ -27,11 +27,14 @@
 - Health/readiness depth is implemented with separate liveness and readiness endpoints.
 - Backend route param typing, driver status enum, and admin audit action typing were repaired.
 - Frontend/admin map marker and query option typing were repaired.
+- `.env.example` and deployment guidance were aligned with runtime truth.
+- API bootstrap now loads `.env` before importing modules that validate environment variables.
+- LocalStorage JWT / XSS posture was audited and recorded in `.memory-bank/audits/local-storage-jwt-xss-posture.md`.
 - Flutter app is planned but not yet present in the repository.
 
 ## Next Recommended Action
 
-Re-check `.env.example` and deploy-facing guidance against current runtime truth, then continue production-readiness review.
+Decide whether browser auth should migrate to HttpOnly cookie/session semantics before production launch.
 
 ## Files Touched
 

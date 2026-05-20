@@ -1,7 +1,17 @@
 import { createServer } from "http";
-import app from "./app.js";
-import { setupWebSocket } from "./lib/websocket.js";
-import { runStartupCleanup } from "./lib/startup.js";
+import { loadEnvFile } from "./lib/env.js";
+
+loadEnvFile();
+
+const [
+  { default: app },
+  { setupWebSocket },
+  { runStartupCleanup },
+] = await Promise.all([
+  import("./app.js"),
+  import("./lib/websocket.js"),
+  import("./lib/startup.js"),
+]);
 
 const rawPort = process.env["PORT"];
 

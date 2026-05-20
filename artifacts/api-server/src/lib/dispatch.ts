@@ -5,11 +5,11 @@ import { logAudit, AuditAction } from "./audit.js";
 import { broadcastTripUpdate } from "./websocket.js";
 
 const DISPATCH_TIMEOUT_MS = 60_000;
-const MAX_DISPATCH_RADIUS_KM = 10;
+const MAX_DISPATCH_RADIUS_MILES = 10;
 const MAX_DISPATCH_ATTEMPTS = 3;
 
-function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371;
+function haversineDistanceMiles(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const EARTH_RADIUS_MILES = 3958.7613;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
   const a =
@@ -17,7 +17,7 @@ function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
     Math.cos((lat1 * Math.PI) / 180) *
     Math.cos((lat2 * Math.PI) / 180) *
     Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return EARTH_RADIUS_MILES * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 export async function findNearestAvailableDriver(
@@ -25,7 +25,7 @@ export async function findNearestAvailableDriver(
   pickupLng: number,
   cityId?: string,
   excludeDriverIds: string[] = []
-): Promise<{ driverId: string; distanceKm: number } | null> {
+): Promise<{ driverId: string; distanceMiles: number } | null> {
   const conditions: ReturnType<typeof eq>[] = [eq(driverProfilesTable.status, "AVAILABLE")];
   if (cityId) conditions.push(eq(driverProfilesTable.cityId, cityId));
 
@@ -40,13 +40,13 @@ export async function findNearestAvailableDriver(
 
   const drivers = await query;
 
-  let nearest: { driverId: string; distanceKm: number } | null = null;
+  let nearest: { driverId: string; distanceMiles: number } | null = null;
   for (const driver of drivers) {
     if (driver.currentLat == null || driver.currentLng == null) continue;
-    const dist = haversineDistance(pickupLat, pickupLng, driver.currentLat, driver.currentLng);
-    if (dist > MAX_DISPATCH_RADIUS_KM) continue;
-    if (!nearest || dist < nearest.distanceKm) {
-      nearest = { driverId: driver.id, distanceKm: dist };
+    const dist = haversineDistanceMiles(pickupLat, pickupLng, driver.currentLat, driver.currentLng);
+    if (dist > MAX_DISPATCH_RADIUS_MILES) continue;
+    if (!nearest || dist < nearest.distanceMiles) {
+      nearest = { driverId: driver.id, distanceMiles: dist };
     }
   }
   return nearest;
@@ -78,7 +78,7 @@ async function getPreviouslyTriedDrivers(tripId: string): Promise<string[]> {
 async function assignDriverToTrip(
   tripId: string,
   driverId: string,
-  distanceKm: number
+  distanceMiles: number
 ): Promise<void> {
   const now = new Date();
 
@@ -92,7 +92,7 @@ async function assignDriverToTrip(
       status: "DRIVER_ASSIGNED",
       actorId: null,
       actorRole: "system",
-      metadata: { driverId, distanceKm },
+      metadata: { driverId, distanceMiles },
     });
 
     await tx.update(driverProfilesTable)
@@ -198,7 +198,7 @@ export async function tryRedispatch(tripId: string): Promise<boolean> {
     return false;
   }
 
-  await assignDriverToTrip(tripId, nearest.driverId, nearest.distanceKm);
+  await assignDriverToTrip(tripId, nearest.driverId, nearest.distanceMiles);
   await logAudit({ entity: "trip", entityId: tripId, action: AuditAction.TRIP_DRIVER_REASSIGNED, severity: "MEDIUM", metadata: { driverId: nearest.driverId, attempt: triedDrivers.length + 1 } });
   return true;
 }
@@ -233,8 +233,8 @@ export async function dispatchTrip(
     return false;
   }
 
-  await assignDriverToTrip(tripId, nearest.driverId, nearest.distanceKm);
-  await logAudit({ entity: "trip", entityId: tripId, action: "DRIVER_ASSIGNED", metadata: { driverId: nearest.driverId, distanceKm: nearest.distanceKm } });
+  await assignDriverToTrip(tripId, nearest.driverId, nearest.distanceMiles);
+  await logAudit({ entity: "trip", entityId: tripId, action: "DRIVER_ASSIGNED", metadata: { driverId: nearest.driverId, distanceMiles: nearest.distanceMiles } });
   return true;
 }
 
@@ -243,15 +243,15 @@ export function estimateRoute(
   fromLng: number,
   toLat: number,
   toLng: number
-): { distanceKm: number; durationMinutes: number; estimatedFare: number; currency: string } {
-  const distanceKm = haversineDistance(fromLat, fromLng, toLat, toLng);
-  const durationMinutes = Math.ceil((distanceKm / 30) * 60);
+): { distanceMiles: number; durationMinutes: number; estimatedFare: number; currency: string } {
+  const distanceMiles = haversineDistanceMiles(fromLat, fromLng, toLat, toLng);
+  const durationMinutes = Math.ceil((distanceMiles / 30) * 60);
   const baseFare = 2.5;
-  const perKmRate = 1.2;
-  const estimatedFare = Math.round((baseFare + distanceKm * perKmRate) * 100) / 100;
-  return { distanceKm: Math.round(distanceKm * 100) / 100, durationMinutes, estimatedFare, currency: "USD" };
+  const perMileRate = 1.2;
+  const estimatedFare = Math.round((baseFare + distanceMiles * perMileRate) * 100) / 100;
+  return { distanceMiles: Math.round(distanceMiles * 100) / 100, durationMinutes, estimatedFare, currency: "USD" };
 }
 
 export function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  return haversineDistance(lat1, lng1, lat2, lng2);
+  return haversineDistanceMiles(lat1, lng1, lat2, lng2);
 }

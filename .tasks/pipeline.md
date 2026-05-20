@@ -15,7 +15,7 @@
 1. Deepen backend health/readiness beyond the current shallow health endpoint. Completed: `/api/livez` and `/api/readyz` were added alongside the existing `/api/healthz` summary.
 2. Fix backend typecheck issues in narrow domain-safe slices. Completed: backend typecheck now passes.
 3. Fix admin/frontend typecheck issues after backend domain contract is clarified. Completed: full workspace typecheck now passes.
-4. Re-check `.env.example` and deploy-facing guidance against current runtime truth.
+4. Re-check `.env.example` and deploy-facing guidance against current runtime truth. Completed: API bootstrap now loads `.env` before runtime modules, `.env.example` no longer advertises unsupported dispatch tuning variables, and deployment guidance documents current env/runtime expectations.
 
 ## High-Risk Follow-Up
 
@@ -26,6 +26,7 @@
 | WebSocket fallback telemetry review | Open | Required before final query-token fallback retirement. |
 | Long-term realtime scaling direction | Open | Single-worker vs Redis-backed cluster mode. |
 | Flutter app planning | Open | API, auth, trip state, payment, and location contracts must be explicit first. |
+| US distance units | Closed | Distance fields, calculations, API schemas, DB schema, and frontend display now use miles. |
 
 ## Backlog
 
@@ -33,6 +34,7 @@
 - Add app-facing deep link/download page strategy for `app.gnncab.com`.
 - Decide Cloudflare Pages/Workers split for admin/public web surfaces.
 - Define release-readiness checklist for first production deployment.
+- Decide browser auth storage direction: keep short-lived bearer token temporarily or migrate admin/frontend to HttpOnly cookie session.
 
 ## Suggested Validation Plan
 
@@ -43,3 +45,4 @@
 | Backend targeted typecheck | Validate backend fixes | Run after backend changes. |
 | Frontend targeted typecheck | Validate admin/frontend fixes | Run after frontend changes. |
 | Deploy shell checks | Validate deployment script edits | Run after deploy changes. |
+| `corepack pnpm run typecheck` | Workspace typecheck after env/deploy alignment | Passed on 2026-05-20. |

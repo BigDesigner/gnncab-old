@@ -20,7 +20,7 @@ export interface Trip {
   dropoffLng: number;
   dropoffAddress: string;
   status: TripStatus;
-  distanceKm?: number | null;
+  distanceMiles?: number | null;
   estimatedFare?: number | null;
   finalFare?: number | null;
   currency: string;

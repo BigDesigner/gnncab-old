@@ -198,7 +198,7 @@ export interface NearbyDriver {
   vehiclePlate?: string | null;
   currentLat: number;
   currentLng: number;
-  distanceKm: number;
+  distanceMiles: number;
   rating?: number | null;
 }
 
@@ -251,7 +251,7 @@ export interface Trip {
   dropoffLng: number;
   dropoffAddress: string;
   status: TripStatus;
-  distanceKm?: number | null;
+  distanceMiles?: number | null;
   estimatedFare?: number | null;
   finalFare?: number | null;
   currency: string;
@@ -348,7 +348,7 @@ export interface TripDetails {
   dropoffLng: number;
   dropoffAddress: string;
   status: TripDetailsStatus;
-  distanceKm?: number | null;
+  distanceMiles?: number | null;
   estimatedFare?: number | null;
   finalFare?: number | null;
   currency: string;
@@ -497,7 +497,7 @@ export interface RouteEstimateRequest {
 }
 
 export interface RouteEstimate {
-  distanceKm: number;
+  distanceMiles: number;
   durationMinutes: number;
   estimatedFare: number;
   currency: string;

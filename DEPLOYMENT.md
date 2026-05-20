@@ -146,6 +146,7 @@ Current verified runtime expectations:
 - Production routing must use `ROUTING_PROVIDER=osrm`.
 - `OSRM_BASE_URL` is required whenever `ROUTING_PROVIDER=osrm`.
 - Treat `mock` routing as local/dev-only, not a production fallback.
+- Dispatch tuning values are currently code constants, not environment variables. Do not add `MAX_DISPATCH_*` environment values unless the backend is changed to read and validate them.
 
 ### 3d. Apply checked-in migrations
 

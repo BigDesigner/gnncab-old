@@ -16,7 +16,7 @@
   "current_sprint": {
     "sprint_id": "phase-1-stabilization",
     "active_tasks": [
-      "Re-check .env.example and deploy-facing guidance against current runtime truth",
+      "Decide browser auth storage direction after localStorage JWT / XSS audit",
       "Keep deployment topology candidate documented for future release planning"
     ]
   },

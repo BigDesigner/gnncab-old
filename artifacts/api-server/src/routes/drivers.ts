@@ -93,9 +93,9 @@ router.get("/nearby", authenticate, async (req, res) => {
 
   const nearby = drivers
     .filter(d => d.currentLat != null && d.currentLng != null)
-    .map(d => ({ ...d, distanceKm: Math.round(haversine(lat, lng, d.currentLat!, d.currentLng!) * 100) / 100 }))
-    .filter(d => d.distanceKm <= radius)
-    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .map(d => ({ ...d, distanceMiles: Math.round(haversine(lat, lng, d.currentLat!, d.currentLng!) * 100) / 100 }))
+    .filter(d => d.distanceMiles <= radius)
+    .sort((a, b) => a.distanceMiles - b.distanceMiles)
     .slice(0, 20);
 
   res.json(nearby);

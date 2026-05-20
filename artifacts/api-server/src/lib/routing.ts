@@ -1,5 +1,5 @@
-export function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371;
+export function haversineDistanceMiles(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const EARTH_RADIUS_MILES = 3958.7613;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
   const a =
@@ -7,11 +7,11 @@ export function haversineDistance(lat1: number, lng1: number, lat2: number, lng2
     Math.cos((lat1 * Math.PI) / 180) *
     Math.cos((lat2 * Math.PI) / 180) *
     Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return EARTH_RADIUS_MILES * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 export interface RouteResult {
-  distanceKm: number;
+  distanceMiles: number;
   durationMinutes: number;
 }
 
@@ -23,10 +23,10 @@ type RoutingProviderType = "mock" | "osrm";
 
 export class MockRoutingProvider implements RoutingProvider {
   async getRoute(fromLat: number, fromLng: number, toLat: number, toLng: number): Promise<RouteResult> {
-    const distanceKm = haversineDistance(fromLat, fromLng, toLat, toLng);
-    const durationMinutes = Math.ceil((distanceKm / 30) * 60);
+    const distanceMiles = haversineDistanceMiles(fromLat, fromLng, toLat, toLng);
+    const durationMinutes = Math.ceil((distanceMiles / 30) * 60);
     return {
-      distanceKm: Math.round(distanceKm * 100) / 100,
+      distanceMiles: Math.round(distanceMiles * 100) / 100,
       durationMinutes,
     };
   }
@@ -64,11 +64,11 @@ export class OSRMRoutingProvider implements RoutingProvider {
       }
 
       const route = data.routes[0];
-      const distanceKm = route.distance / 1000;
+      const distanceMiles = route.distance / 1609.344;
       const durationMinutes = Math.ceil(route.duration / 60);
 
       return {
-        distanceKm: Math.round(distanceKm * 100) / 100,
+        distanceMiles: Math.round(distanceMiles * 100) / 100,
         durationMinutes,
       };
     } catch (error) {

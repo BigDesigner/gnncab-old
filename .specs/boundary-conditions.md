@@ -21,6 +21,7 @@
 | Realtime location | Location tracking must minimize exposure and respect user role boundaries. | Inferred | Product domain |
 | Payments | Payment/refund state must not rely on frontend trust. | Inferred | Product domain |
 | Admin privilege | Admin tools must fail closed and produce audit evidence. | Verified | `agents/STANDARD.md` |
+| Distance units | Product-facing distance, dispatch radius, route estimates, and fare calculations use miles for the US market. | Verified | `.memory-bank/adr/0008-us-distance-units-use-miles.md` |
 
 ## Deployment Boundaries
 
