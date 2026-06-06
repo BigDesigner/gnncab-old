@@ -6,55 +6,41 @@
 |---|---|
 | Mode | Interactive |
 | Branch | `master` |
-| Last committed baseline | Pending commit after auth hardening session close |
-| Worktree at session close | Pending commit with auth hardening and memory updates |
-| Current phase | Phase 1 stabilization and production runtime hardening |
-| Immediate next task | Decide remaining auth policy: token lifetime and native/mobile strategy |
+| Last committed baseline | `e410ce7` + security commit `a0ebb4e` |
+| Worktree at session close | Clean |
+| Current phase | Security hardening and production readiness complete |
+| Immediate next task | Verify local deployment on VMware Ubuntu VM |
 
-## What Changed In This Memory Restructure
+## What Changed In This Session
 
-- Added `.memory-bank/` as the structured memory index.
-- Added `.specs/` for bootstrap, boundaries, and constitution.
-- Added `.tasks/` for active pipeline and handoff state.
-- Added `.agents/runtime-manifest.json` for agent write boundaries.
-- Preserved all existing `agents/` files in place.
-- Did not archive or delete any historical documentation.
-- Did not modify application source code.
+- Implemented secure WebSocket recipient scoping for driver location updates and trip status updates to protect passenger/driver privacy.
+- Added coordinate boundary checks on the routing estimate endpoint.
+- Segregated browser cookie auth from native/mobile token responses: browser JSON responses return empty string token to keep tokens out of JS memory.
+- Hardened CSRF middleware to prevent cookie + bearer header bypass checks for browser clients.
+- Hardened Nginx Content-Security-Policy by removing script-src unsafe-inline and adding allowed map tiles and Google Fonts domains.
+- Fixed TypeScript compile implicit any warnings in mockup-sandbox.
+- Updated spec and requirements documents.
 
 ## Known Failures And Risks
 
-- Full workspace typecheck currently passes.
-- Health/readiness depth is implemented with separate liveness and readiness endpoints.
-- Backend route param typing, driver status enum, and admin audit action typing were repaired.
-- Frontend/admin map marker and query option typing were repaired.
-- `.env.example` and deployment guidance were aligned with runtime truth.
-- API bootstrap now loads `.env` before importing modules that validate environment variables.
-- LocalStorage JWT / XSS posture was audited and recorded in `.memory-bank/audits/local-storage-jwt-xss-posture.md`.
-- Browser auth now uses an HttpOnly cookie session instead of localStorage token persistence.
-- Cookie-authenticated unsafe browser requests now require double-submit CSRF protection.
-- Browser WebSocket auth now uses the HttpOnly cookie handshake; query-token fallback is restricted to no-Origin compatibility clients.
-- Deployment notes now call out `AUTH_COOKIE_DOMAIN=.gnncab.com` when admin and API run on separate subdomains.
+- Full workspace typecheck passes successfully.
+- Dependency audit is clean (0 vulnerabilities).
+- Production build compiles successfully.
+- Web UI pages and active workflows are stabilized.
 - Flutter app is planned but not yet present in the repository.
-- Resolved 20 dependency vulnerabilities using strict catalogs and overrides in `pnpm-workspace.yaml`.
-- Performed deep security inspection across authentication, SQLi, XSS, configuration, and cryptography.
-- Cleaned up and migrated legacy root `agents/` folder into `.agents/` and archived the originals to `.archive/agents-backup/`.
-
 
 ## Verified In This Session
 
 | Command | Result | Notes |
 |---|---|---|
-| `corepack pnpm run typecheck` | Passed | Full workspace typecheck passed after auth hardening changes. |
-| `git diff --check` | Passed | No whitespace errors detected. |
-| Browser localStorage JWT pattern search | Passed | No old patterns found. |
-| `pnpm audit` | Passed | 0 vulnerabilities found after lockfile override remediation. |
-| `corepack pnpm run typecheck` | Passed | Workspace checks pass after package bumps on 2026-05-30. |
+| `corepack pnpm run typecheck` | Passed | Full workspace typecheck passed. |
+| `corepack pnpm run build` | Passed | Production packages compiled successfully. |
+| `corepack pnpm audit --prod` | Passed | 0 vulnerabilities found. |
 
 ## Next Recommended Action
 
-Decide remaining auth policy: token lifetime and native/mobile bearer/refresh-token strategy.
+Test the local deployment sequence on the VMware Ubuntu VM using the `deploy/setup.sh` script.
 
 ## Files Touched
 
-See the closing commit for the exact file list.
-
+See the closing commits `a0ebb4e` and `e410ce7` for the exact file list.
