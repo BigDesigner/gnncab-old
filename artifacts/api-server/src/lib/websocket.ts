@@ -2,8 +2,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import { IncomingMessage, Server } from "http";
 import { verifyToken } from "./jwt.js";
 import { db } from "@workspace/db";
-import { driverProfilesTable } from "@workspace/db/schema";
-import { eq } from "drizzle-orm";
+import { driverProfilesTable, tripsTable } from "@workspace/db/schema";
+import { eq, and, inArray } from "drizzle-orm";
 import { logAuditAsync, AuditAction } from "./audit.js";
 import {
   publish,
@@ -251,17 +251,63 @@ export function setupWebSocket(server: Server) {
 
           if (dp) {
             client.driverProfileId = dp.id;
+
+            let recipientUserIds: string[] | undefined = undefined;
+            let tripId: string | undefined = undefined;
+
+            if (dp.status !== "AVAILABLE") {
+              const [activeTrip] = await db.select({
+                customerId: tripsTable.customerId,
+                id: tripsTable.id
+              })
+              .from(tripsTable)
+              .where(and(
+                eq(tripsTable.driverId, dp.id),
+                inArray(tripsTable.status, [
+                  "DRIVER_ASSIGNED",
+                  "DRIVER_ACCEPTED",
+                  "DRIVER_EN_ROUTE",
+                  "DRIVER_ARRIVED",
+                  "TRIP_STARTED"
+                ])
+              ))
+              .limit(1);
+
+              if (activeTrip) {
+                recipientUserIds = [activeTrip.customerId, payload.userId];
+                tripId = activeTrip.id;
+              } else {
+                recipientUserIds = [payload.userId];
+              }
+            }
+
+            const locationPayload = {
+              type: "DRIVER_LOCATION",
+              driverId: dp.id,
+              lat: msg.lat,
+              lng: msg.lng,
+              status: dp.status,
+              tripId,
+            };
+
             broadcast(
-              { type: "DRIVER_LOCATION", driverId: dp.id, lat: msg.lat, lng: msg.lng, status: dp.status },
-              (c) => c.role === "customer"
+              locationPayload,
+              (c) => {
+                if (c.role === "admin") return true;
+                if (recipientUserIds) {
+                  return recipientUserIds.includes(c.userId);
+                }
+                return c.role === "customer";
+              }
             );
-            // Relay to other worker instances; local delivery already done above.
-            // msg.lat and msg.lng are narrowed to number by the isValidCoordinate guard above.
+
             publish(CHANNEL_DRIVER_LOCATION, {
               driverId: dp.id,
               lat:      msg.lat as number,
               lng:      msg.lng as number,
               status:   dp.status,
+              recipientUserIds,
+              tripId,
             } satisfies DriverLocationPayload).catch((err: unknown) =>
               console.error("[WS] Redis publish error (DRIVER_LOCATION):", err)
             );
@@ -312,16 +358,51 @@ export function broadcast(data: unknown, filter?: (client: AuthenticatedClient) 
   }
 }
 
-export function broadcastTripUpdate(
+export async function broadcastTripUpdate(
   tripId: string,
   status: string,
   recipientUserIds?: string[],
   _fromRedis = false
 ) {
+  let finalRecipients = recipientUserIds;
+  if (!finalRecipients) {
+    try {
+      const [tripData] = await db.select({
+        customerId: tripsTable.customerId,
+        driverId: tripsTable.driverId
+      })
+      .from(tripsTable)
+      .where(eq(tripsTable.id, tripId))
+      .limit(1);
+
+      if (tripData) {
+        const recipients = [tripData.customerId];
+        if (tripData.driverId) {
+          const [dp] = await db.select({
+            userId: driverProfilesTable.userId
+          })
+          .from(driverProfilesTable)
+          .where(eq(driverProfilesTable.id, tripData.driverId))
+          .limit(1);
+          if (dp) {
+            recipients.push(dp.userId);
+          }
+        }
+        finalRecipients = recipients;
+      } else {
+        console.error(`[WS] Failed to resolve trip ${tripId} for status update ${status}`);
+        return; // Fail closed
+      }
+    } catch (err) {
+      console.error("[WS] Database error resolving trip recipients:", err);
+      return; // Fail closed
+    }
+  }
+
   const message = JSON.stringify({ type: "TRIP_UPDATE", tripId, status });
   for (const client of clients.values()) {
     if (client.ws.readyState === WebSocket.OPEN) {
-      if (!recipientUserIds || recipientUserIds.includes(client.userId)) {
+      if (client.role === "admin" || (finalRecipients && finalRecipients.includes(client.userId))) {
         client.ws.send(message);
       }
     }
@@ -331,7 +412,7 @@ export function broadcastTripUpdate(
     publish(CHANNEL_TRIP_UPDATE, {
       tripId,
       status,
-      recipientUserIds,
+      recipientUserIds: finalRecipients,
     } satisfies TripUpdatePayload).catch((err: unknown) =>
       console.error("[WS] Redis publish error (TRIP_UPDATE):", err)
     );
@@ -353,7 +434,7 @@ function subscribeToRedisChannels(): void {
       return;
     }
     // _fromRedis = true prevents re-publishing back into Redis.
-    broadcastTripUpdate(payload.tripId, payload.status, payload.recipientUserIds, true);
+    void broadcastTripUpdate(payload.tripId, payload.status, payload.recipientUserIds, true);
   }).catch((err: unknown) =>
     console.error("[WS] Redis subscribe error (TRIP_UPDATE):", err)
   );
@@ -370,10 +451,23 @@ function subscribeToRedisChannels(): void {
       console.warn("[WS] Received malformed DRIVER_LOCATION from Redis:", raw);
       return;
     }
-    // Deliver only to customers on this worker. No re-publish (broadcast does not publish).
+    // Deliver to matching clients on this worker. No re-publish (broadcast does not publish).
     broadcast(
-      { type: "DRIVER_LOCATION", driverId: payload.driverId, lat: payload.lat, lng: payload.lng, status: payload.status },
-      (c) => c.role === "customer"
+      {
+        type: "DRIVER_LOCATION",
+        driverId: payload.driverId,
+        lat: payload.lat,
+        lng: payload.lng,
+        status: payload.status,
+        tripId: payload.tripId,
+      },
+      (c) => {
+        if (c.role === "admin") return true;
+        if (payload.recipientUserIds) {
+          return payload.recipientUserIds.includes(c.userId);
+        }
+        return c.role === "customer";
+      }
     );
   }).catch((err: unknown) =>
     console.error("[WS] Redis subscribe error (DRIVER_LOCATION):", err)

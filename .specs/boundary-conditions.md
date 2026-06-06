@@ -4,11 +4,13 @@
 
 | Boundary | Rule | Confidence | Evidence |
 |---|---|---|---|
-| Authentication | JWT authentication is required for protected flows. | Verified | `agents/STANDARD.md` |
+| Authentication | JWT authentication is required for protected flows (HttpOnly cookies in browsers). | Verified | `agents/STANDARD.md` |
 | Authorization | Role-based access control is required. | Verified | `agents/STANDARD.md` |
 | Browser origins | Wildcard production origins are forbidden. | Verified | `agents/STANDARD.md`, `agents/VERIFIED_WORKLOG.md` |
-| WebSocket browser auth | Browser clients use subprotocol token transport, not URL query tokens. | Verified | `agents/VERIFIED_WORKLOG.md` |
+| WebSocket browser auth | Browser clients use HttpOnly session cookie transport for websocket auth. | Verified | `.memory-bank/audits/pre-deployment-deep-inspect-v4-v5.md` |
 | Query-token fallback | Temporary compatibility only for no-`Origin` requests. | Verified | `agents/SESSION_SNAPSHOT.md` |
+| CSRF protection | Required for all state-modifying browser requests via custom headers matching the csrf cookie. | Verified | `artifacts/api-server/src/middlewares/csrf.ts` |
+| Response JWT protection | Auth endpoints return empty JWT string to browser clients to prevent exposure. | Verified | `artifacts/api-server/src/routes/auth.ts` |
 | Audit logging | Security-sensitive admin actions should be auditable. | Verified | `agents/STANDARD.md` |
 
 ## Ride-Hailing Domain Boundaries

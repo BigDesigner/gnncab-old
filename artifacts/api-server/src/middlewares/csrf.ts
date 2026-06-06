@@ -10,10 +10,15 @@ export function requireCsrfForCookieAuth(req: Request, res: Response, next: Next
     return;
   }
 
-  const hasBearerAuth = req.headers.authorization?.startsWith("Bearer ") === true;
+  const hasOrigin = typeof req.headers["origin"] === "string";
   const hasSessionCookie = typeof req.cookies?.[AUTH_COOKIE_NAME] === "string";
+  const isNative = req.headers["x-client-type"] === "native";
 
-  if (!hasSessionCookie || hasBearerAuth) {
+  // If session cookie is present and it is a browser context (has Origin or not explicitly native),
+  // we enforce CSRF protection even if Bearer auth is also present, to prevent potential CSRF bypasses.
+  if (hasSessionCookie && (hasOrigin || !isNative)) {
+    // Proceed to CSRF checks (do not bypass)
+  } else if (!hasSessionCookie || req.headers.authorization?.startsWith("Bearer ") === true) {
     next();
     return;
   }

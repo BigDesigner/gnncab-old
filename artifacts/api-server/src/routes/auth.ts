@@ -36,6 +36,8 @@ const loginSchema = z.object({
 router.post("/register", async (req, res) => {
   const ua = req.headers["user-agent"];
   const parsed = registerSchema.safeParse(req.body);
+  const isNative = req.headers["x-client-type"] === "native";
+  const isBrowser = !isNative && !!(req.headers["origin"] || req.headers["sec-fetch-site"] || req.headers["sec-ch-ua"]);
 
   if (!parsed.success) {
     res.status(400).json({ error: "ValidationError", message: "Invalid input", details: parsed.error.flatten() });
@@ -84,7 +86,7 @@ router.post("/register", async (req, res) => {
   });
 
   res.status(201).json({
-    token,
+    token: isBrowser ? "" : token,
     user: {
       id:        user.id,
       email:     user.email,
@@ -103,6 +105,8 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   const ua = req.headers["user-agent"];
   const parsed = loginSchema.safeParse(req.body);
+  const isNative = req.headers["x-client-type"] === "native";
+  const isBrowser = !isNative && !!(req.headers["origin"] || req.headers["sec-fetch-site"] || req.headers["sec-ch-ua"]);
 
   if (!parsed.success) {
     res.status(400).json({ error: "ValidationError", message: "Invalid input" });
@@ -173,7 +177,7 @@ router.post("/login", async (req, res) => {
   });
 
   res.json({
-    token,
+    token: isBrowser ? "" : token,
     user: {
       id:        user.id,
       email:     user.email,

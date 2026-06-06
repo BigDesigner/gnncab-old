@@ -101,7 +101,7 @@ async function assignDriverToTrip(
       .where(eq(driverProfilesTable.id, driverId));
   });
 
-  broadcastTripUpdate(tripId, "DRIVER_ASSIGNED", undefined);
+  await broadcastTripUpdate(tripId, "DRIVER_ASSIGNED", undefined);
 
   // 60-second acceptance timer — if driver doesn't respond, try next driver
   setTimeout(async () => {
@@ -128,7 +128,7 @@ async function assignDriverToTrip(
           .where(eq(driverProfilesTable.id, driverId));
       });
 
-      broadcastTripUpdate(tripId, "DRIVER_NO_RESPONSE", undefined);
+      await broadcastTripUpdate(tripId, "DRIVER_NO_RESPONSE", undefined);
       await logAudit({ entity: "trip", entityId: tripId, action: AuditAction.TRIP_DRIVER_NO_RESPONSE, severity: "MEDIUM", metadata: { driverId } });
 
       // Try to re-dispatch to the next nearest available driver
@@ -168,7 +168,7 @@ export async function tryRedispatch(tripId: string): Promise<boolean> {
         metadata: { reason: "Max dispatch attempts reached", attempts: triedDrivers.length },
       });
     });
-    broadcastTripUpdate(tripId, "TIMEOUT", undefined);
+    await broadcastTripUpdate(tripId, "TIMEOUT", undefined);
     await logAudit({ entity: "trip", entityId: tripId, action: "DISPATCH_TIMEOUT", metadata: { attempts: triedDrivers.length } });
     return false;
   }
@@ -194,7 +194,7 @@ export async function tryRedispatch(tripId: string): Promise<boolean> {
         metadata: { reason: "No available drivers in range", triedDrivers },
       });
     });
-    broadcastTripUpdate(tripId, "TIMEOUT", undefined);
+    await broadcastTripUpdate(tripId, "TIMEOUT", undefined);
     await logAudit({ entity: "trip", entityId: tripId, action: "DISPATCH_NO_DRIVER", metadata: { triedDrivers } });
     return false;
   }
@@ -229,7 +229,7 @@ export async function dispatchTrip(
         metadata: { reason: "No available drivers at initial dispatch", pickupLat, pickupLng, cityId },
       });
     });
-    broadcastTripUpdate(tripId, "TIMEOUT", undefined);
+    await broadcastTripUpdate(tripId, "TIMEOUT", undefined);
     await logAudit({ entity: "trip", entityId: tripId, action: "DISPATCH_NO_DRIVER", metadata: { pickupLat, pickupLng, cityId } });
     return false;
   }

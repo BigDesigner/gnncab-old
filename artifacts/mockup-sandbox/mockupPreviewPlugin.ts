@@ -3,7 +3,7 @@ import path from "path";
 import glob from "fast-glob";
 import chokidar from "chokidar";
 import type { FSWatcher } from "chokidar";
-import type { Plugin } from "vite";
+import type { Plugin, ViteDevServer } from "vite";
 
 const MOCKUPS_DIR = "src/components/mockups";
 const GENERATED_MODULE = "src/.generated/mockup-components.ts";
@@ -118,7 +118,7 @@ export function mockupPreviewPlugin(): Plugin {
     name: "mockup-preview",
     enforce: "pre",
 
-    configResolved(config) {
+    configResolved(config: any) {
       root = config.root;
     },
 
@@ -126,7 +126,7 @@ export function mockupPreviewPlugin(): Plugin {
       await refresh();
     },
 
-    async configureServer(viteServer) {
+    async configureServer(viteServer: ViteDevServer) {
       await refresh();
 
       const mockupsAbsDir = getMockupsAbsDir();
@@ -140,7 +140,7 @@ export function mockupPreviewPlugin(): Plugin {
         },
       });
 
-      watcher.on("add", (file) => {
+      watcher.on("add", (file: string) => {
         if (
           isMockupFile(file) &&
           isPreviewTarget(path.relative(mockupsAbsDir, file))
@@ -149,13 +149,13 @@ export function mockupPreviewPlugin(): Plugin {
         }
       });
 
-      watcher.on("unlink", (file) => {
+      watcher.on("unlink", (file: string) => {
         if (isMockupFile(file)) {
           void onFileAddedOrRemoved();
         }
       });
 
-      viteServer.middlewares.use((req, res, next) => {
+      viteServer.middlewares.use((req: any, res: any, next: any) => {
         const requestUrl = new URL(req.url ?? "/", "http://127.0.0.1");
         const pathname = requestUrl.pathname;
         const originalEnd = res.end.bind(res);

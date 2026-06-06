@@ -15,6 +15,8 @@ export interface DriverLocationPayload {
   lat: number;
   lng: number;
   status: string;
+  recipientUserIds?: string[];
+  tripId?: string;
 }
 
 // Returns null when REDIS_URL is not configured so single-instance mode still works.

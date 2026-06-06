@@ -314,7 +314,7 @@ router.put("/:tripId/status", authenticate, async (req: AuthRequest, res) => {
       metadata: parsed.data.metadata,
     });
     await logAudit({ entity: "trip", entityId: trip.id, action: "DRIVER_REJECTED", actorId: req.user?.userId, actorRole: req.user?.role, ipAddress: req.ip });
-    broadcastTripUpdate(trip.id, "DRIVER_REJECTED", undefined);
+    await broadcastTripUpdate(trip.id, "DRIVER_REJECTED", undefined);
     // Attempt to find next driver asynchronously
     tryRedispatch(trip.id).catch(console.error);
     res.json(updated);
@@ -343,7 +343,7 @@ router.put("/:tripId/status", authenticate, async (req: AuthRequest, res) => {
   const auditEntry = STATUS_AUDIT[parsed.data.status] ?? { action: `TRIP_${parsed.data.status}`, severity: "LOW" as AuditSeverity };
 
   await logAudit({ entity: "trip", entityId: trip.id, action: auditEntry.action, severity: auditEntry.severity, actorId: req.user?.userId, actorRole: req.user?.role, ipAddress: req.ip });
-  broadcastTripUpdate(trip.id, parsed.data.status, undefined);
+  await broadcastTripUpdate(trip.id, parsed.data.status, undefined);
 
   res.json(updated);
 });
@@ -441,7 +441,7 @@ router.post("/:tripId/cancel", authenticate, async (req: AuthRequest, res) => {
 
   await db.update(paymentsTable).set({ status: "FAILED", updatedAt: now }).where(eq(paymentsTable.tripId, trip.id));
   await logAudit({ entity: "trip", entityId: trip.id, action: AuditAction.TRIP_CANCELLED, severity: "MEDIUM", actorId: req.user?.userId, actorRole: req.user?.role, ipAddress: req.ip, metadata: { reason: parsed.data.reason } });
-  broadcastTripUpdate(trip.id, "TRIP_CANCELLED", undefined);
+  await broadcastTripUpdate(trip.id, "TRIP_CANCELLED", undefined);
 
   res.json(updated);
 });
