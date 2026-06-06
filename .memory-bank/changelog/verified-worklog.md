@@ -29,12 +29,13 @@ This file indexes verified work from `agents/VERIFIED_WORKLOG.md`, `agents/NEXT_
 | 2026-05-30 | Deep security inspection audit performed | Verified | `.memory-bank/audits/deep-security-inspection.md` |
 | 2026-05-30 | Migrated legacy agents directory to hidden config directories | Verified | Deleted `agents/`, created `.agents/ai-pipeline.md`, `.agents/new-chat-protocol.md`, archived to `.archive/agents-backup/` |
 | 2026-06-01 | Pre-deployment extreme deep inspections (Rounds 4 & 5) | Verified | `.memory-bank/audits/pre-deployment-deep-inspect-v4-v5.md` |
+| 2026-06-06 | Security audit remediations and production hardening | Verified | Commit `a0ebb4e`, `.memory-bank/audits/security-audit-2026-06-06.md`, websocket scoping, coordinate bounds, csrf checks, response JWT masking |
 
 ## Known Incomplete Work
 
 | Area | Status | Notes |
 |---|---|---|
-| Token lifetime and native/mobile auth strategy | Open | Browser cookie auth is mitigated; production still needs explicit access/refresh/native strategy. |
+| Token lifetime and native/mobile auth strategy | Mitigated | Browser cookie auth is segregated from native/mobile token responses. Ready for Flutter native development. |
 | Backup/restore drill | Open | Operational drill still needs to be performed. |
 | WebSocket query-token fallback retirement | Open | Requires post-deploy telemetry review. |
 | Flutter app implementation | Open | Mobile app is planned but not yet present in the repository. |
@@ -49,3 +50,6 @@ This file indexes verified work from `agents/VERIFIED_WORKLOG.md`, `agents/NEXT_
 | 2026-05-20 | `git diff --check` | Passed | No whitespace errors detected before session close. |
 | 2026-05-30 | `pnpm audit` | Passed | 0 vulnerabilities found after overrides and package catalog updates. |
 | 2026-05-30 | `corepack pnpm run typecheck` | Passed | Full workspace typecheck passed with updated dependencies. |
+| 2026-06-06 | `corepack pnpm run typecheck` | Passed | Workspace typecheck passed after resolving mockup-sandbox implicit any parameters. |
+| 2026-06-06 | `corepack pnpm run build` | Passed | Workspace builds completely. |
+| 2026-06-06 | `corepack pnpm audit --prod` | Passed | No known production vulnerabilities. |
