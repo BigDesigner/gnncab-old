@@ -108,7 +108,6 @@ router.post("/", authenticate, requireRole("customer"), async (req: AuthRequest,
     notes:          z.string().max(1000).optional(),
     cityId:         z.string().uuid().nullish(),
   });
-
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "ValidationError", message: "Invalid input", details: parsed.error.flatten() });
@@ -129,7 +128,7 @@ router.post("/", authenticate, requireRole("customer"), async (req: AuthRequest,
     return;
   }
 
-  const { distanceMiles, estimatedFare, currency } = estimateRoute(
+  const { distanceMiles, estimatedFare, currency } = await estimateRoute(
     parsed.data.pickupLat, parsed.data.pickupLng,
     parsed.data.dropoffLat, parsed.data.dropoffLng
   );

@@ -5,17 +5,22 @@
 Track how existing GNNcab documentation maps into the new memory-bank structure.
 
 > [!IMPORTANT]
-> No existing documentation was deleted or archived during this restructuring. The active `agents/` directory remains in place as historical and operational memory.
+> The active `agents/` directory has been successfully moved to the new hidden folder structure (`.agents/`, `.memory-bank/`, `.specs/`, `.tasks/`). All original legacy files are safely archived under `.archive/agents-backup/`.
 
-| Original Path | New Path | Archive Path | Action | Notes |
+
+| Original Path (Legacy) | New Path | Archive Path | Action | Notes |
 |---|---|---|---|---|
-| `agents/BOOTSTRAP.md` | `.specs/bootstrap.md`, `.tasks/pipeline.md` | Not applicable | Summarized / Left in place | Active bootstrap state was summarized while preserving the original file. |
-| `agents/STANDARD.md` | `.specs/constitution.md`, `.specs/boundary-conditions.md` | Not applicable | Summarized / Left in place | Engineering, language, security, and dispatch-zone rules were carried forward. |
-| `agents/AGENTS.md` | `.specs/constitution.md`, `.memory-bank/system-coherence.md` | Not applicable | Summarized / Left in place | Agent operating rules and deployment responsibility were preserved. |
-| `agents/DECISIONS.md` | `.memory-bank/adr/*.md` | Not applicable | Migrated / Left in place | Key decisions were split into ADR files. |
-| `agents/ARCHITECTURE_NOTES.md` | `.memory-bank/adr/0006-candidate-public-deployment-topology.md`, `.specs/boundary-conditions.md` | Not applicable | Summarized / Left in place | Candidate topology and dispatch scaling notes were preserved. |
-| `agents/VERIFIED_WORKLOG.md` | `.memory-bank/changelog/verified-worklog.md` | Not applicable | Summarized / Left in place | Historical verified work was indexed without moving the source file. |
-| `agents/NEXT_ACTIONS.md` | `.tasks/pipeline.md`, `.memory-bank/bugs/bug-list.md` | Not applicable | Summarized / Left in place | Current next task and high-risk follow-ups were copied forward. |
-| `agents/SESSION_STATE.md` | `.tasks/pipeline.md`, `.tasks/handoff.md` | Not applicable | Summarized / Left in place | Current project state and risks were summarized. |
-| `agents/SESSION_SNAPSHOT.md` | `.tasks/handoff.md`, `.tasks/pipeline.md` | Not applicable | Summarized / Left in place | Handoff-ready state was preserved. |
-| `DEPLOYMENT.md` | `.specs/bootstrap.md`, `.specs/boundary-conditions.md` | Not applicable | Linked / Left in place | Deployment guide remains the detailed operational source. |
+| `agents/BOOTSTRAP.md` | `.specs/bootstrap.md`, `.tasks/pipeline.md` | `.archive/agents-backup/BOOTSTRAP.md` | Moved / Archived | Active bootstrap state was summarized; original file removed from root. |
+| `agents/STANDARD.md` | `.specs/constitution.md`, `.specs/boundary-conditions.md` | `.archive/agents-backup/STANDARD.md` | Moved / Archived | Engineering, language, security, and dispatch rules carried forward. |
+| `agents/AGENTS.md` | `.specs/constitution.md`, `.memory-bank/system-coherence.md` | `.archive/agents-backup/AGENTS.md` | Moved / Archived | Agent operating rules and deployment responsibility preserved. |
+| `agents/DECISIONS.md` | `.memory-bank/adr/0001` through `0008` | `.archive/agents-backup/DECISIONS.md` | Moved / Archived | Key decisions were split into separate ADR files. |
+| `agents/ARCHITECTURE_NOTES.md` | `.memory-bank/adr/0006-candidate-public-deployment-topology.md`, `.specs/boundary-conditions.md` | `.archive/agents-backup/ARCHITECTURE_NOTES.md` | Moved / Archived | Candidate topology and dispatch scaling notes preserved. |
+| `agents/VERIFIED_WORKLOG.md` | `.memory-bank/changelog/verified-worklog.md` | `.archive/agents-backup/VERIFIED_WORKLOG.md` | Moved / Archived | Historical verified work was fully indexed. |
+| `agents/NEXT_ACTIONS.md` | `.tasks/pipeline.md`, `.memory-bank/bugs/bug-list.md` | `.archive/agents-backup/NEXT_ACTIONS.md` | Moved / Archived | Next actions and backlog checklist items migrated. |
+| `agents/SESSION_STATE.md` | `.tasks/pipeline.md`, `.tasks/handoff.md` | `.archive/agents-backup/SESSION_STATE.md` | Moved / Archived | Current project state and active risks summarized. |
+| `agents/SESSION_SNAPSHOT.md` | `.tasks/handoff.md`, `.tasks/pipeline.md` | `.archive/agents-backup/SESSION_SNAPSHOT.md` | Moved / Archived | Boot and handoff state preserved. |
+| `agents/AI_GUARDRAILS.md` | `.specs/constitution.md`, `.specs/boundary-conditions.md` | `.archive/agents-backup/AI_GUARDRAILS.md` | Moved / Archived | Core AI constraint rules carried forward. |
+| `agents/AI_PIPELINE.md` | `.agents/ai-pipeline.md` | `.archive/agents-backup/AI_PIPELINE.md` | Relocated / Recreated | Updated development workflow for active agents. |
+| `agents/CHATGPT_NEW_CHAT_PROTOCOL.md` | `.agents/new-chat-protocol.md` | `.archive/agents-backup/CHATGPT_NEW_CHAT_PROTOCOL.md` | Relocated / Recreated | Updated bootstrap contract for fresh chat sessions. |
+| `DEPLOYMENT.md` | `.specs/bootstrap.md`, `.specs/boundary-conditions.md` | Not applicable | Linked / Left in place | Deployment guide remains in the repository root. |
+

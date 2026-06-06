@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, timestamp, doublePrecision, integer, pgEnum, numeric } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, timestamp, doublePrecision, integer, pgEnum, numeric, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { usersTable } from "./users";
@@ -25,6 +25,10 @@ export const driverProfilesTable = pgTable("driver_profiles", {
   totalTrips: integer("total_trips").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => {
+  return [
+    index("idx_driver_profiles_status").on(table.status),
+  ];
 });
 
 export const insertDriverProfileSchema = createInsertSchema(driverProfilesTable).omit({ id: true, createdAt: true, updatedAt: true });

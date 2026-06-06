@@ -99,10 +99,6 @@ export default function Login() {
                 Sign In
               </Button>
               
-              <div className="text-center text-sm text-muted-foreground pt-4">
-                Demo accounts: <br/>
-                admin@gnncab.com | driver@gnncab.com | cust@gnncab.com
-              </div>
             </form>
           </CardContent>
         </Card>

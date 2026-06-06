@@ -1,4 +1,5 @@
 import { db } from "@workspace/db";
+import { getRoutingProvider } from "./routing";
 import { driverProfilesTable, tripsTable, tripEventsTable } from "@workspace/db/schema";
 import { eq, and, notInArray, sql } from "drizzle-orm";
 import { logAudit, AuditAction } from "./audit.js";
@@ -238,13 +239,15 @@ export async function dispatchTrip(
   return true;
 }
 
-export function estimateRoute(
+export async function estimateRoute(
   fromLat: number,
   fromLng: number,
   toLat: number,
   toLng: number
-): { distanceMiles: number; durationMinutes: number; estimatedFare: number; currency: string } {
-  const distanceMiles = haversineDistanceMiles(fromLat, fromLng, toLat, toLng);
+): Promise<{ distanceMiles: number; durationMinutes: number; estimatedFare: number; currency: string }> {
+  const provider = getRoutingProvider();
+  const route = await provider.getRoute(fromLat, fromLng, toLat, toLng);
+  const distanceMiles = route.distanceMiles;
   const durationMinutes = Math.ceil((distanceMiles / 30) * 60);
   const baseFare = 2.5;
   const perMileRate = 1.2;

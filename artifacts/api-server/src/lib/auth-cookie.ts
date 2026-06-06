@@ -5,7 +5,7 @@ export const AUTH_COOKIE_NAME = "gnncab_session";
 export const CSRF_COOKIE_NAME = "gnncab_csrf";
 export const CSRF_HEADER_NAME = "x-csrf-token";
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 
 function getAuthCookieOptions(): CookieOptions {
   return {
@@ -13,7 +13,7 @@ function getAuthCookieOptions(): CookieOptions {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: ONE_DAY_MS,
+    maxAge: TWELVE_HOURS_MS,
     ...(process.env.AUTH_COOKIE_DOMAIN ? { domain: process.env.AUTH_COOKIE_DOMAIN } : {}),
   };
 }
@@ -37,7 +37,7 @@ function getCsrfCookieOptions(): CookieOptions {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: ONE_DAY_MS,
+    maxAge: TWELVE_HOURS_MS,
     ...(process.env.AUTH_COOKIE_DOMAIN ? { domain: process.env.AUTH_COOKIE_DOMAIN } : {}),
   };
 }

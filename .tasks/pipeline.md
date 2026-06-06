@@ -12,10 +12,15 @@
 
 ## Immediate Next Actions
 
-1. Deepen backend health/readiness beyond the current shallow health endpoint. Completed: `/api/livez` and `/api/readyz` were added alongside the existing `/api/healthz` summary.
-2. Fix backend typecheck issues in narrow domain-safe slices. Completed: backend typecheck now passes.
-3. Fix admin/frontend typecheck issues after backend domain contract is clarified. Completed: full workspace typecheck now passes.
-4. Re-check `.env.example` and deploy-facing guidance against current runtime truth. Completed: API bootstrap now loads `.env` before runtime modules, `.env.example` no longer advertises unsupported dispatch tuning variables, and deployment guidance documents current env/runtime expectations.
+1. Deepen backend health/readiness beyond the current shallow health endpoint. Completed: `/api/livez` and `/api/readyz` were added.
+2. Fix backend typecheck issues. Completed: backend typecheck now passes.
+3. Fix admin/frontend typecheck issues. Completed: full workspace typecheck now passes.
+4. Re-check `.env.example` and deploy-facing guidance. Completed: API bootstrap updates and env example alignment completed.
+5. Resolve dependency security vulnerabilities. Completed: Configured catalogs and overrides in `pnpm-workspace.yaml` to achieve 0 zafiyeti.
+6. Run deep inspect security audit. Completed: Performed comprehensive manual and automated security review, resulting in `.memory-bank/audits/deep-security-inspection.md`.
+7. Clean up and migrate legacy `agents/` directory. Completed: Relocated necessary active documents to `.agents/` and archived all files under `.archive/agents-backup/` before removing the root directory.
+
+
 
 ## High-Risk Follow-Up
 
@@ -47,3 +52,6 @@
 | Deploy shell checks | Validate deployment script edits | Run after deploy changes. |
 | `corepack pnpm run typecheck` | Workspace typecheck after env/deploy alignment | Passed on 2026-05-20. |
 | `corepack pnpm run typecheck` | Workspace typecheck after browser cookie auth and CSRF changes | Passed on 2026-05-20. |
+| `pnpm audit` | Check dependency vulnerabilities | Passed on 2026-05-30 (0 vulnerabilities). |
+| `corepack pnpm run typecheck` | Workspace typecheck after dependency updates | Passed on 2026-05-30. |
+

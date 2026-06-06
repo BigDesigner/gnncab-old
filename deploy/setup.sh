@@ -52,7 +52,7 @@ server {
     listen [::]:80;
     server_name $domain;
 
-    root /var/www/gnncab/artifacts/gnncab/dist;
+    root /var/www/gnncab/artifacts/gnncab/dist/public;
     index index.html;
 
     location / {
@@ -79,6 +79,8 @@ server {
         proxy_set_header   X-Forwarded-Proto \$scheme;
     }
 }
+EOF
+}
 
 install_nginx_global_config() {
   install -d -m 755 /etc/nginx/conf.d
@@ -90,8 +92,6 @@ activate_nginx_site() {
   ln -sf /etc/nginx/sites-available/gnncab /etc/nginx/sites-enabled/gnncab
   rm -f /etc/nginx/sites-enabled/default
   nginx -t && systemctl reload nginx
-}
-EOF
 }
 
 # =============================================================================
@@ -248,7 +248,8 @@ upsert_env_value() {
       }
     }
   ' "$env_file" > "$temp_file"
-  mv "$temp_file" "$env_file"
+  cat "$temp_file" > "$env_file"
+  rm -f "$temp_file"
 }
 
 load_env_file() {
@@ -828,7 +829,7 @@ fi
 # =============================================================================
 info "[11/14] Creating app user and directory structure..."
 id -u "$APP_USER" &>/dev/null || \
-  useradd --system --no-create-home --shell /usr/sbin/nologin "$APP_USER"
+  useradd --system --home-dir "$APP_DIR" --shell /bin/bash "$APP_USER"
 
 mkdir -p "$APP_DIR" "$LOG_DIR" "$BACKUP_DIR"
 chown -R "$APP_USER:$APP_USER" "$APP_DIR" "$LOG_DIR"
@@ -910,16 +911,17 @@ fi
 # Inject DB password into .env
 DB_URL="postgresql://gnncab:${DB_PASS}@localhost:5432/gnncab"
 sed -i "s|DATABASE_URL=.*|DATABASE_URL=$DB_URL|" "$APP_DIR/.env"
+chown "$APP_USER:$APP_USER" "$APP_DIR/.env"
 echo ""
 ok "PostgreSQL database 'gnncab' is ready for first-deploy bootstrap — password stored in .env"
 
 sudo -u "$APP_USER" bash -c "
   set -e
   cd $APP_DIR
+  pnpm install --frozen-lockfile
   set -a
   . ./.env
   set +a
-  pnpm install --frozen-lockfile
   pnpm --filter @workspace/db run migrate
   pnpm --filter @workspace/api-server run build
   pnpm --filter @workspace/gnncab run build
@@ -928,6 +930,9 @@ sudo -u "$APP_USER" bash -c "
 warn "Production setup does not create an admin automatically."
 warn "Run an explicit bootstrap command after setup completes:"
 warn "  cd $APP_DIR && pnpm --filter @workspace/scripts run bootstrap-admin -- --email admin@example.com --password 'StrongPassword!1'"
+
+info "Setting up OSRM Docker container..."
+bash "$APP_DIR/deploy/osrm-setup.sh"
 
 # Deploy Nginx config
 install_nginx_global_config

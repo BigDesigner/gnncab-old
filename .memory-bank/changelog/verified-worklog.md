@@ -25,6 +25,10 @@ This file indexes verified work from `agents/VERIFIED_WORKLOG.md`, `agents/NEXT_
 | 2026-05-20 | Browser auth moved away from localStorage JWT storage | Verified | Session closing commit, `artifacts/api-server/src/lib/auth-cookie.ts`, `artifacts/gnncab/src/lib/fetch-interceptor.ts`, `artifacts/gnncab/src/components/auth-context.tsx` |
 | 2026-05-20 | Cookie-authenticated browser requests protected with CSRF validation | Verified | Session closing commit, `artifacts/api-server/src/middlewares/csrf.ts`, `artifacts/api-server/src/app.ts`, `artifacts/gnncab/src/lib/fetch-interceptor.ts` |
 | 2026-05-20 | Browser WebSocket auth moved to HttpOnly cookie handshake | Verified | Session closing commit, `artifacts/api-server/src/lib/websocket.ts`, `artifacts/gnncab/src/hooks/use-websocket.tsx` |
+| 2026-05-30 | 20 dependency vulnerabilities resolved | Verified | `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `pnpm audit` |
+| 2026-05-30 | Deep security inspection audit performed | Verified | `.memory-bank/audits/deep-security-inspection.md` |
+| 2026-05-30 | Migrated legacy agents directory to hidden config directories | Verified | Deleted `agents/`, created `.agents/ai-pipeline.md`, `.agents/new-chat-protocol.md`, archived to `.archive/agents-backup/` |
+| 2026-06-01 | Pre-deployment extreme deep inspections (Rounds 4 & 5) | Verified | `.memory-bank/audits/pre-deployment-deep-inspect-v4-v5.md` |
 
 ## Known Incomplete Work
 
@@ -43,3 +47,5 @@ This file indexes verified work from `agents/VERIFIED_WORKLOG.md`, `agents/NEXT_
 | 2026-05-20 | `corepack pnpm run typecheck` | Passed | Full workspace typecheck passed after env/deploy alignment and US distance unit changes. |
 | 2026-05-20 | `corepack pnpm run typecheck` | Passed | Full workspace typecheck passed after browser cookie auth and CSRF changes. |
 | 2026-05-20 | `git diff --check` | Passed | No whitespace errors detected before session close. |
+| 2026-05-30 | `pnpm audit` | Passed | 0 vulnerabilities found after overrides and package catalog updates. |
+| 2026-05-30 | `corepack pnpm run typecheck` | Passed | Full workspace typecheck passed with updated dependencies. |

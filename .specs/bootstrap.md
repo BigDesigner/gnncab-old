@@ -4,13 +4,13 @@
 
 | Field | Value | Confidence | Evidence |
 |---|---|---|---|
-| Project | GNNcab ride-hailing / local transportation dispatch platform | Verified | `agents/TASK.md`, `agents/STANDARD.md` |
+| Project | GNNcab ride-hailing / local transportation dispatch platform | Verified | `.archive/agents-backup/TASK.md`, `.specs/constitution.md` |
 | Package manager | pnpm via Corepack | Verified | `package.json`, `pnpm-workspace.yaml`, `.npmrc` |
-| Backend | Node.js, TypeScript, Express | Verified | `artifacts/api-server/package.json`, `agents/STANDARD.md` |
+| Backend | Node.js, TypeScript, Express | Verified | `artifacts/api-server/package.json`, `.specs/constitution.md` |
 | Admin/frontend | React + Vite | Verified | `artifacts/gnncab/package.json` |
 | Database | PostgreSQL with Drizzle | Verified | `lib/db/package.json`, `lib/db/drizzle/` |
-| Realtime | WebSocket | Verified | `agents/STANDARD.md`, `artifacts/api-server/src/lib/websocket.ts` |
-| Mobile app | Future Flutter client | Inferred | `agents/ARCHITECTURE_NOTES.md`, project direction |
+| Realtime | WebSocket | Verified | `.specs/constitution.md`, `artifacts/api-server/src/lib/websocket.ts` |
+| Mobile app | Future Flutter client | Inferred | `.archive/agents-backup/ARCHITECTURE_NOTES.md`, project direction |
 | Deployment target | DigitalOcean Ubuntu VM with Nginx, PM2, PostgreSQL | Verified | `DEPLOYMENT.md`, `deploy/` |
 
 ## Setup Commands

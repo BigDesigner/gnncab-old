@@ -35,6 +35,10 @@
 - Browser WebSocket auth now uses the HttpOnly cookie handshake; query-token fallback is restricted to no-Origin compatibility clients.
 - Deployment notes now call out `AUTH_COOKIE_DOMAIN=.gnncab.com` when admin and API run on separate subdomains.
 - Flutter app is planned but not yet present in the repository.
+- Resolved 20 dependency vulnerabilities using strict catalogs and overrides in `pnpm-workspace.yaml`.
+- Performed deep security inspection across authentication, SQLi, XSS, configuration, and cryptography.
+- Cleaned up and migrated legacy root `agents/` folder into `.agents/` and archived the originals to `.archive/agents-backup/`.
+
 
 ## Verified In This Session
 
@@ -42,7 +46,9 @@
 |---|---|---|
 | `corepack pnpm run typecheck` | Passed | Full workspace typecheck passed after auth hardening changes. |
 | `git diff --check` | Passed | No whitespace errors detected. |
-| Browser localStorage JWT pattern search | Passed | No old `gnncab_token`, `gnncab_user`, `localStorage` token, WebSocket `auth.${token}`, or browser `Authorization: Bearer` patterns found. |
+| Browser localStorage JWT pattern search | Passed | No old patterns found. |
+| `pnpm audit` | Passed | 0 vulnerabilities found after lockfile override remediation. |
+| `corepack pnpm run typecheck` | Passed | Workspace checks pass after package bumps on 2026-05-30. |
 
 ## Next Recommended Action
 
@@ -51,3 +57,4 @@ Decide remaining auth policy: token lifetime and native/mobile bearer/refresh-to
 ## Files Touched
 
 See the closing commit for the exact file list.
+

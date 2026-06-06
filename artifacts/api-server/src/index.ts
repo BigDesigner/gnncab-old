@@ -3,16 +3,6 @@ import { loadEnvFile } from "./lib/env.js";
 
 loadEnvFile();
 
-const [
-  { default: app },
-  { setupWebSocket },
-  { runStartupCleanup },
-] = await Promise.all([
-  import("./app.js"),
-  import("./lib/websocket.js"),
-  import("./lib/startup.js"),
-]);
-
 const rawPort = process.env["PORT"];
 
 if (!rawPort) {
@@ -24,10 +14,20 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-const server = createServer(app);
-setupWebSocket(server);
-
 async function startServer(): Promise<void> {
+  const [
+    { default: app },
+    { setupWebSocket },
+    { runStartupCleanup },
+  ] = await Promise.all([
+    import("./app.js"),
+    import("./lib/websocket.js"),
+    import("./lib/startup.js"),
+  ]);
+
+  const server = createServer(app);
+  setupWebSocket(server);
+
   // Release any drivers orphaned in RESERVED state by a previous process restart.
   // Must run before accepting traffic so the dispatch engine starts with a clean state.
   await runStartupCleanup();

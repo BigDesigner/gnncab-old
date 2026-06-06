@@ -4,15 +4,8 @@
 
 Store security, quality, and operational audit reports.
 
-## Current State
+## Catalog of Audits
 
-No standalone historical audit report was moved into this directory during the initial restructuring.
+- [LocalStorage JWT / XSS Posture Audit](file:///c:/Users/bigde/.antigravity/GNNcab/.memory-bank/audits/local-storage-jwt-xss-posture.md) (2026-05-20) - Mitigated
+- [Deep Security Inspection Audit](file:///c:/Users/bigde/.antigravity/GNNcab/.memory-bank/audits/deep-security-inspection.md) (2026-05-30) - Passed
 
-Relevant audit-like source material remains in:
-
-- `agents/VERIFIED_WORKLOG.md`
-- `agents/NEXT_ACTIONS.md`
-- `agents/SESSION_STATE.md`
-- `DEPLOYMENT.md`
-
-Future audits should be added here with clear evidence, scope, and status.

@@ -24,6 +24,6 @@
     "bugs": ".memory-bank/bugs/",
     "tasks": ".tasks/",
     "archive": ".archive/docs-migration/",
-    "legacy_agents": "agents/"
+    "legacy_agents": ".archive/agents-backup/"
   }
 }

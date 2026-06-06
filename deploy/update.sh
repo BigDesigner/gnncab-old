@@ -85,7 +85,7 @@ server {
     listen [::]:80;
     server_name $domain;
 
-    root /var/www/gnncab/artifacts/gnncab/dist;
+    root /var/www/gnncab/artifacts/gnncab/dist/public;
     index index.html;
 
     location / {
@@ -356,7 +356,7 @@ sudo -u "$APP_USER" bash -c "
   git checkout -B $DEPLOY_BRANCH origin/$DEPLOY_BRANCH
   git reset --hard origin/$DEPLOY_BRANCH
 "
-echo "  HEAD is now: $(git log --oneline -1)"
+echo "  HEAD is now: $(sudo -u "$APP_USER" git log --oneline -1)"
 
 echo "[2/8] Installing dependencies..."
 sudo -u "$APP_USER" pnpm install --frozen-lockfile

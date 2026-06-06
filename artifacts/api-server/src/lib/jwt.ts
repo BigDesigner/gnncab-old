@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 const rawJwtSecret = process.env["JWT_SECRET"]?.trim();
-const JWT_EXPIRES_IN = process.env["JWT_EXPIRES_IN"] || "24h";
+const JWT_EXPIRES_IN = process.env["JWT_EXPIRES_IN"] || "12h";
 
 if (!rawJwtSecret) {
   throw new Error("JWT_SECRET environment variable is required.");

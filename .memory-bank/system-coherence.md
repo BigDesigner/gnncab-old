@@ -5,15 +5,16 @@
 This document defines how humans and AI agents should preserve project memory, avoid context drift, and keep GNNcab changes safe.
 
 > [!IMPORTANT]
-> The existing `agents/` directory is active historical memory. It must not be deleted or archived automatically. New memory-bank files should index, summarize, and cross-reference it.
+> The legacy `agents/` directory has been archived. All active memory-bank files are located in `.memory-bank/`, `.tasks/`, and `.specs/`. Historical files are archived under `.archive/agents-backup/`.
 
 ## Session Start Protocol
 
 1. Check the current branch and worktree state.
 2. Read `.memory-bank/active-session.json`.
 3. Read `.tasks/pipeline.md` for the current next action.
-4. Use `agents/SESSION_SNAPSHOT.md` and `agents/BOOTSTRAP.md` when deeper historical continuity is needed.
+4. Use `.archive/agents-backup/SESSION_SNAPSHOT.md` and `.archive/agents-backup/BOOTSTRAP.md` when deeper historical continuity is needed.
 5. Confirm that the requested work is compatible with the current stabilization lane.
+
 
 ## Scope Discipline
 

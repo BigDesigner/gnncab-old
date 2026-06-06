@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, doublePrecision, pgEnum, numeric, json } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, doublePrecision, pgEnum, numeric, json, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { usersTable } from "./users";
@@ -46,6 +46,12 @@ export const tripsTable = pgTable("trips", {
   completedAt: timestamp("completed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => {
+  return [
+    index("idx_trips_customer_id").on(table.customerId),
+    index("idx_trips_driver_id").on(table.driverId),
+    index("idx_trips_status").on(table.status),
+  ];
 });
 
 export const tripEventsTable = pgTable("trip_events", {

@@ -17,7 +17,7 @@ router.post("/estimate", authenticate, async (req, res) => {
     res.status(400).json({ error: "ValidationError", message: "Invalid coordinates" });
     return;
   }
-  const estimate = estimateRoute(parsed.data.fromLat, parsed.data.fromLng, parsed.data.toLat, parsed.data.toLng);
+  const estimate = await estimateRoute(parsed.data.fromLat, parsed.data.fromLng, parsed.data.toLat, parsed.data.toLng);
   res.json(estimate);
 });
 
