@@ -12,6 +12,8 @@
 
 ## Immediate Next Actions
 
+- Dependency hardening completed on 2026-10-27: full/production audits report zero advisories, frozen install/build/codegen and three runtime smoke tests pass on Windows. See `.memory-bank/audits/dependency-hardening-2026-10-27.md`. Linux CI and deprecated Recharts migration remain follow-up work.
+
 1. Deepen backend health/readiness beyond the current shallow health endpoint. Completed: `/api/livez` and `/api/readyz` were added.
 2. Fix backend typecheck issues. Completed: backend typecheck now passes.
 3. Fix admin/frontend typecheck issues. Completed: full workspace typecheck now passes.

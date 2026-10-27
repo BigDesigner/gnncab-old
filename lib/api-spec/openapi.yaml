@@ -1612,15 +1612,17 @@ components:
         customer:
           $ref: "#/components/schemas/UserProfile"
         driver:
-          $ref: "#/components/schemas/DriverDetails"
           nullable: true
+          allOf:
+            - $ref: "#/components/schemas/DriverDetails"
         events:
           type: array
           items:
             $ref: "#/components/schemas/TripEvent"
         payment:
-          $ref: "#/components/schemas/Payment"
           nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Payment"
       required:
         - id
         - customerId

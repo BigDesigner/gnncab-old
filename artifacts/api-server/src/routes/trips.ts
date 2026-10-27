@@ -248,7 +248,7 @@ router.put("/:tripId/status", authenticate, async (req: AuthRequest, res) => {
       "DRIVER_EN_ROUTE", "DRIVER_ARRIVED",
       "TRIP_STARTED",    "TRIP_COMPLETED",
     ]),
-    metadata: z.record(z.unknown()).optional(),
+    metadata: z.record(z.string(), z.unknown()).optional(),
   });
 
   const parsed = schema.safeParse(req.body);

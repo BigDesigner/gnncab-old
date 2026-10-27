@@ -702,7 +702,7 @@ ok "Kernel hardening applied (SYN cookies, ASLR, rp_filter, log_martians)"
 info "[7/14] Installing Node.js $NODE_VERSION, pnpm, and PM2..."
 curl -fsSL "https://deb.nodesource.com/setup_${NODE_VERSION}.x" | bash -
 apt-get install -y nodejs
-npm install -g pnpm pm2 pm2-logrotate
+npm install -g pnpm@10.32.1 pm2 pm2-logrotate
 # Configure PM2 log rotation
 pm2 set pm2-logrotate:max_size 50M
 pm2 set pm2-logrotate:retain 7

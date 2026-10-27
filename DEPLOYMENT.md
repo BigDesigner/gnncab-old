@@ -1,5 +1,11 @@
 # GNNcab - DigitalOcean Deployment Guide
 
+## Dependency Toolchain
+
+Use Node.js 24 (at least 24.14.0) and pnpm 10.32.1, matching the root package.json and deploy/setup.sh. On existing servers, install the pinned package manager with `npm install --global pnpm@10.32.1` before deployment. Keep `pnpm install --frozen-lockfile` as the deployment install command; investigate lockfile mismatches rather than regenerating the lockfile on the server.
+
+Before release, run `corepack pnpm run test:dependencies`, `corepack pnpm --filter @workspace/api-spec run codegen:check`, `corepack pnpm run build`, and `corepack pnpm run audit:dependencies`. The codegen check writes isolated output under ignored `tmp/codegen-smoke`. Windows and Linux CI definitions are in `.github/workflows/dependencies.yml`.
+
 ## Architecture Overview
 
 ```text
